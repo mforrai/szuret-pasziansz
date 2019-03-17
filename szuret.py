@@ -20,8 +20,11 @@ import urllib.parse
 #### MAC address lementése ##################
 #############################################
 from uuid import getnode as get_mac
-mc = get_mac()
-mac=hex(mc)
+try:
+	mc = get_mac()
+	mac=hex(mc)
+except:
+	print('Nincs Internet kapcsolat!')
 
 ############################
 #### Milyen op.rendszer??###
@@ -122,8 +125,11 @@ def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, bi
 ###########################################################
 def legmagasabb_pont():
 	url = ("http://mforrai.mooo.com:1213/szuret/sajat_eredmenyek_lekerdezese.php?mac="+mac)
-	r = requests.get(url)
-	pontszam = str(r.content.decode("utf-8"))
+	try:
+		r = requests.get(url)
+		pontszam = str(r.content.decode("utf-8"))
+	except:
+		pontszam = 'n/a'
 	return pontszam
 
 ######################################
