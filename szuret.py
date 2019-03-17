@@ -16,7 +16,7 @@ import urllib.parse
 # print(platform.release())
 #print(platform.platform())
 
-#############################################
+#############################################!
 #### MAC address lementése ##################
 #############################################
 from uuid import getnode as get_mac
