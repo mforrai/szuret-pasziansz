@@ -127,9 +127,11 @@ def legmagasabb_pont():
 	url = ("http://mforrai.mooo.com:1213/szuret/sajat_eredmenyek_lekerdezese.php?mac="+mac)
 	try:
 		r = requests.get(url)
-		pontszam = str(r.content.decode("utf-8"))
+		pontszam = str(r.content.decode("utf-8"))	
 	except:
-		pontszam = 'n/a'
+		pontszam = '-999'
+	if pontszam == '':
+		pontszam = '-999'
 	return pontszam
 
 ######################################
@@ -885,7 +887,36 @@ def magamrol():
 	input('')
 	intro()
 
-
+def szoveges_ertekeles(pont):
+	try:
+		if pont == -999:
+			return 'Nincs korábbi eredmény.'
+		
+		if -50 <= pont <= 20:
+			return 'lőre'
+		
+		if 20 <= pont <= 39:
+			return 'kocsisbor'
+	
+		if 40 <= pont <= 59:
+			return 'fröccsnek megteszi'
+	
+		if 60 <= pont <= 79:
+			return 'asztali bor'
+			
+		if 80 <= pont <= 99:
+			return 'tájbor'
+	
+		if 100 <= pont <= 119:
+			return 'minőségi bor'
+			
+		if 120 <= pont <= 149:
+			return 'Grand Cru'
+	
+		if 150 <= pont <= 500:
+			return 'Grand Cru Reserve'
+	except:
+		return '-'
 
 def eredmeny(kor):
 	print('──────────────────────────────────────────────────────────────── v0.93.1')
@@ -1164,7 +1195,7 @@ def intro():
 		print('                                                                  \n' * 9)
 		cim()
 		print('                                                                  \n' * 3)
-		print('Legjobb eredményed: '+legmagasabb_pont()+' pont')
+		print('Legjobb eredményed: '+legmagasabb_pont()+' pont - '+szoveges_ertekeles(int(legmagasabb_pont())))
 		print('────────────────────────────────────────────────────────────────────────')
 		print(' (H)elp                        (Ú)j játék                    (M)agamról ')
 		print('────────────────────────────────────────────────────────────────────────')
@@ -1414,7 +1445,7 @@ def jatek():
 	print('Nulla pontos körök (' + str([resultkor[1],resultkor[2],resultkor[3],resultkor[4],resultkor[5]].count(0))+ ' db):     ' + str(nullasok).zfill(2) + ' pont')# mínusz 5*(nullás várak)
 	print('════════════════════════════════════════════════════════════════════════')
 	grand_total = osszes_birtok + zold_var + piros_var + nullasok # grant total
-	print('ÖSSZESEN:                      ' + str(grand_total).zfill(3) + ' pont')
+	print('ÖSSZESEN:                      ' + str(grand_total).zfill(3) + ' pont - ' + szoveges_ertekeles(grand_total))
 	print('════════════════════════════════════════════════════════════════════════')
 	send_results_net(kihuzott_birtokok[1], resultkor[1], kihuzott_birtokok[2], resultkor[2], kihuzott_birtokok[3], resultkor[3], kihuzott_birtokok[4], resultkor[4], kihuzott_birtokok[5], resultkor[5], piros_var, zold_var, nullasok, grand_total, kerekitett_ido, koridok[1], koridok[2], koridok[3], koridok[4], koridok[5], hosszkor[1], hosszkor[2], hosszkor[3], hosszkor[4], hosszkor[5], hossz_zold, hossz_piros, mac, matrix_up)
 	print('Nyomj ENTER-t...')
