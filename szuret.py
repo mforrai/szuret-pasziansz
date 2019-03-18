@@ -176,10 +176,11 @@ if oprendszer() == 'mac':
 			import pygame.midi
 		pygame.midi.init()
 		dir = os.path.dirname(__file__)
-		pygame.init()
+		pygame.mixer.init()
 	
 		url = 'http://www.curtisclark.org/emusic/midi/agrivenb.mid'
 		wget.download(url, 'ambient3.mid')
+
 		pygame.mixer.music.load(os.path.join(dir,'ambient3.mid'))
 		pygame.mixer.music.play(loops = -1)
 	else:
