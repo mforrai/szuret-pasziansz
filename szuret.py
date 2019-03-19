@@ -134,6 +134,50 @@ def legmagasabb_pont():
 		pontszam = '-999'
 	return pontszam
 
+###########################################################
+# KORÁBBI LEGJOBB EREDMÉNY RAJZA ###########################
+###########################################################
+def convert_str2int(a):
+	try:
+		a = int(a)
+		return a
+	except:
+		return a
+		
+def legjobb_matrix():
+	try:
+		url = ("http://mforrai.mooo.com:1213/szuret/legjobb_matrix.php?mac="+mac)
+		r = requests.get(url)
+		matrix = str(r.content.decode("utf-8")).replace("vesszo","'")
+		matrix = matrix.replace("[","")
+		matrix = matrix.replace("]","")
+		matrix = matrix.replace("'","")
+		matrix = matrix.replace(" ","")
+		matrix = matrix.split(",")
+		tr1 = [matrix[x:x+6] for x in range(0, len(matrix), 6)]
+		tr2 = [tr1[x:x+6] for x in range(0, len(tr1), 6)]
+		
+		j=0
+		while j < 7:
+			z = 0
+			while z < 6:
+				i = 0
+				while i < 6:
+					try:
+						tr2[j][i][z] =  int(tr2[j][i][z])
+					except:
+						pass
+					i += 1
+				z += 1
+			j += 1
+	
+		kepernyo_torles()
+		rajz(tr2,oszlop,sor)
+		print('\n\n\nNyomj ENTER-t!')
+		input()
+		intro()
+	except:
+		pass
 ######################################
 #### ZENE + SZÍNEK ###################
 ######################################
@@ -172,19 +216,22 @@ if oprendszer() == 'mac':
 			kepernyo_torles()
 	
 	if zene == 'i':
-		import contextlib
-		with contextlib.redirect_stdout(None):
-			import pygame,os
-			import pygame.midi
-		pygame.midi.init()
-		dir = os.path.dirname(__file__)
-		pygame.mixer.init()
+		try:
+			import contextlib
+			with contextlib.redirect_stdout(None):
+				import pygame,os
+				import pygame.midi
+			pygame.midi.init()
+			dir = os.path.dirname(__file__)
+			pygame.mixer.init()
+		
+			url = 'http://www.curtisclark.org/emusic/midi/agrivenb.mid'
+			wget.download(url, 'ambient3.mid')
 	
-		url = 'http://www.curtisclark.org/emusic/midi/agrivenb.mid'
-		wget.download(url, 'ambient3.mid')
-
-		pygame.mixer.music.load(os.path.join(dir,'ambient3.mid'))
-		pygame.mixer.music.play(loops = -1)
+			pygame.mixer.music.load(os.path.join(dir,'ambient3.mid'))
+			pygame.mixer.music.play(loops = -1)
+		except:
+			pass
 	else:
 		pass
 else:
@@ -334,7 +381,6 @@ def rajz(imp_matrix,n1,n2):
 		print('  └──────────────────────────────────────────────────────────────────┘')
 		print('        A          B          C          D          E          F     ')
 		print('────────────────────────────────────────────────────────────────────────')
-
 
 	else:
 		mtrx = copy.deepcopy(imp_matrix)
@@ -1195,7 +1241,7 @@ def intro():
 		print('                                                                  \n' * 9)
 		cim()
 		print('                                                                  \n' * 3)
-		print('Legjobb eredményed: '+legmagasabb_pont()+' pont - '+szoveges_ertekeles(int(legmagasabb_pont())))
+		print('Legjobb eredményed: '+legmagasabb_pont()+' pont - '+szoveges_ertekeles(int(legmagasabb_pont()))+'    (*)')
 		print('────────────────────────────────────────────────────────────────────────')
 		print(' (H)elp                        (Ú)j játék                    (M)agamról ')
 		print('────────────────────────────────────────────────────────────────────────')
@@ -1215,6 +1261,8 @@ def intro():
 				help()
 			if ch in [109,77]:	# magamról
 				magamrol()
+			if ch in [42]:	# legjobb eremény rajza
+				legjobb_matrix()
 			else:
 				pass
 	else: #iOS miatt butított a menü
