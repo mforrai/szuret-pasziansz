@@ -16,6 +16,10 @@ import urllib.parse
 # print(platform.release())
 #print(platform.platform())
 
+version = 'v1.1'
+nyelv = 'hun'
+ydim=72
+xdim=63
 #############################################!
 #### MAC address lementése ##################
 #############################################
@@ -49,21 +53,66 @@ def kepernyo_torles():
 		console.clear()
 	if oprendszer() == 'mac':
 		os.system('clear')
+
+#####################################
+#### KÉPERNYŐ ELEMEK ################
+#####################################
+def teljessor(stilus,db=1):
+	if stilus == 'ures':
+		print((' ' *ydim)* db)
+
+	if stilus == 'szimpla':
+		print(('─' *ydim)* db)
+
+	if stilus == 'dupla':
+		print(('═' *ydim)* db)
+
+	if stilus == 'pottyos':
+		print(('.' *ydim)* db)		
+############################################
+############################################
+def teljessorszoveggel(stilus,szoveg,pozicio='kozep',extra_space=''):
+
+	stilusok = {
+		'ures': ' ',
+		'szimpla': '─',
+		'dupla' : '═',
+		'pottyos': '.'
+	}
+
+	if extra_space == 1:
+		szoveg = szoveg.replace("", " ")[1: -1]
+
+	eleje_hossz = int((ydim-len(szoveg)-2)/2)
+	vege_hossz = ydim-eleje_hossz-len(szoveg)-2
+	karakter = stilusok[stilus]
+	
+	if pozicio == 'kozep':
+		print((karakter* eleje_hossz + ' ' + szoveg+ ' ' +karakter * vege_hossz))
+
+	if pozicio == 'bal':
+		vege_hossz = ydim-len(szoveg)-1
+		print((szoveg+ ' ' +karakter * vege_hossz))
+	
+	if pozicio == 'jobb':
+		eleje_hossz=ydim-len(szoveg)-1
+		print((karakter* eleje_hossz + ' ' + szoveg))
+
 ############################################
 # TERMINAL BEÁLLÍTÁSAI
 ############################################
-print('                                                                  \n' * 200)
+teljessor('ures')
 
 if oprendszer() == 'mac':
 	kepernyo_torles()
-	sys.stdout.write("\x1b[8;{rows};{cols}t".format(rows=63, cols=72))
+	sys.stdout.write("\x1b[8;{rows};{cols}t".format(rows=xdim, cols=ydim))
 if oprendszer() == 'ios':
 	kepernyo_torles()
 	import console
 	console.set_font("Menlo-Regular", 8)
 if oprendszer() == 'win':
 	kepernyo_torles()
-	os.system('mode con: cols=72 lines=63')
+	os.system('mode con: cols='+str(ydim)+' lines='+str(xdim))
 kepernyo_torles()
 
 ###########################
@@ -81,16 +130,173 @@ def send_email_results(level_tartalma):
 	server.quit()
 # send_email_results(level_tartalma)
 
+#####################################
+######## SZÓTÁR #############
+#####################################
+txt = {
+	'legjobb_eredmeny' : {
+		'hun' : 'Legjobb eredményed: ',
+		'eng' : 'High Score: '
+		},
+	
+	'szeretnel_zenet' : {
+		'hun' : 'Szeretnél háttér zenét? (i/n)',
+		'eng' : 'Turn on background music? (y/n)'
+		},
+
+	'szeretnel_zenet_internet' : {
+		'hun' : 'A lejátszáshoz Internet kapcsolatra van szükség!',
+		'eng' : 'Internet connection needed.'
+		},
+
+	'szeretnel_szineket' : {
+		'hun' : 'Szeretnél színeket? (i/n)',
+		'eng' : 'Color mode? (y/n)'
+		},
+
+	'szeretnel_szineket_warning' : {
+		'hun' : 'Egyes terminal alkalmazásokban nem jelennek meg helyesen.',
+		'eng' : 'Not supported by every terminal emulator.'
+		},
+
+	'pont' : {
+		'hun' : ' pont',
+		'eng' : ' point(s)'
+		},
+
+	'fomenu' : {
+		'hun' : ' (H)elp                        (Ú)j játék                    (M)agamról ',
+		'eng' : ' (H)elp                        (N)ew game                    (A)bout    '
+		},
+
+	'fomenu_ios' : {
+		'hun' : '                            ENTER: Új játék                             ',
+		'eng' : '                            ENTER: New game                             '
+		},
+
+	'kihuzott_sarga' : {
+		'hun' : 'Kihúzott sárga utak száma: ',
+		'eng' : 'Yellow roads in current round: '
+		},
+
+	'birtok' : {
+		'hun' : 'birtok',
+		'eng' : 'Farm'
+		},
+		
+	'every_birtok' : {
+		'hun' : 'Összes birtok:',
+		'eng' : 'Sum  of farms:'
+		},	
+
+	'green_castle' : {
+		'hun' : 'Zöld kastély:',
+		'eng' : 'Green castle:'
+		},
+
+	'red_castle' : {
+		'hun' : 'Piros kastély:',
+		'eng' : 'Red castle   :'
+		},
+		
+	'zero_point_rounds' : {
+		'hun' : 'Nulla pontos körök',
+		'eng' : 'Zero  point rounds'
+		},		
+		
+	'hit_enter' : {
+		'hun' : 'Nyomj ENTER-t a folytatáshoz...',
+		'eng' : 'Press ENTER to continue...'
+		},
+
+	'db' : {
+		'hun' : ' db',
+		'eng' : '   '
+		},
+		
+	'under_contstruction' : {
+		'hun' : 'Feltöltés alatt...',
+		'eng' : 'Under construction...'
+		},	
+		
+	'under_contstruction' : {
+		'hun' : 'Feltöltés alatt...',
+		'eng' : 'Under construction...'
+		},				
+
+	'points_expected' : {
+		'hun' : 'Várható pontok a körben:',
+		'eng' : 'Points in current round:'
+		},	
+
+	'total' : {
+		'hun' : 'ÖSSZESEN:',
+		'eng' : 'TOTAL    '
+		},	
+
+	'where_road' : {
+		'hun' : 'Hová helyezi az utat?',
+		'eng' : 'Where do you place the road?'
+		},	
+
+	'field_used' : {
+		'hun' : 'A megadott mezőn már van út!',
+		'eng' : 'You already used this field.'
+		},	
+
+	'kukk_happened' : {
+		'hun' : 'Ebben a körben már megtekintette a következő birtokot!',
+		'eng' : 'Next farm was already shown in this round.'
+		},	
+		
+	'last_round' : {
+		'hun' : 'Ez az utolsó kör!',
+		'eng' : 'Last round.'
+		},
+		
+	'not_valid_command' : {
+		'hun' : 'Nem létező parancs! Helyes formátum pl.: A1, D4 stb. vagy BIRTOK',
+		'eng' : 'Not valid command. Valid format: A1, D4 etc. or FARM'
+		},
+
+	'points_cur_round' : {
+		'hun' : ' birtok pontszáma: ',
+		'eng' : ' Farm: '
+		},
+
+	'not_more' : {
+		'hun' : 'Sajnos nem haladta meg az előző birtok pontszámát.',
+		'eng' : 'Less or equal points than last round.'
+		},	
+
+	'enter_results' : {
+		'hun' : 'Nyomj ENTER-t a végeredményhez...',
+		'eng' : 'Hit ENTER for final results...'
+		},
+
+	'end' : {
+		'hun' : 'VÉGE',
+		'eng' : 'THE END'
+		},	
+
+	'results' : {
+		'hun' : 'VÉGEREDMÉNY',
+		'eng' : 'RESULTS'
+		},
+
+
+
+}
 
 #################################
 #### Lenyomott gomb érzékelése ##
 #################################
 def getchar():
 	if oprendszer() == 'mac':
-		# Returns a single character from standard input
+		# visszaadja a leütött karaktert
 		import os
 		ch = ''
-		if os.name == 'nt': # how it works on windows
+		if os.name == 'nt': # Windows
 			import msvcrt
 			ch = msvcrt.getch()
 		else:
@@ -102,13 +308,13 @@ def getchar():
 				ch = sys.stdin.read(1)
 			finally:
 				termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-		if ord(ch) == 3: quit() # handle ctrl+C
+		if ord(ch) == 3: quit() # ctrl+C
 		return ch
 	else:
 		pass
 # while 1:  # ha ki kellene próbálni, hogy mik az egyes key code-ok
 # 	ch = getchar()
-# 	print('You pressed %c (%i)' % (ch, ord(ch)))
+# 	print('Lenyomott gomb %c (%i)' % (ch, ord(ch)))
 
 ###########################################################
 # FELKÜLDÉS A SZERVERNEK ##################################
@@ -173,44 +379,55 @@ def legjobb_matrix():
 	
 		kepernyo_torles()
 		rajz(tr2,oszlop,sor)
-		print('\n\n\nNyomj ENTER-t!')
+		teljessor('ures',2)
+		teljessorszoveggel('dupla',txt['hit_enter'][nyelv],'kozep')
 		input()
 		intro()
 	except:
 		pass
 ######################################
-#### ZENE + SZÍNEK ###################
+#### NYELV + ZENE + SZÍNEK ###################
 ######################################
 if oprendszer() == 'mac':
+	while True:
+		teljessor('ures',20)
+		teljessorszoveggel('ures','1: magyar','kozep')
+		teljessorszoveggel('ures','2: english','kozep')
+		ch_nyelv = ord(getchar())
+		if ch_nyelv in [49]: # magyar
+			nyelv = 'hun'
+			break
+		if ch_nyelv in [50]: # angol
+			nyelv = 'eng'
+			break
+		else:
+			kepernyo_torles()
+			
 	import wget
 	while True:
-		print('                                                                  \n' * 100)
-		print('Szeretnél háttér zenét? (i/n)')
-		print('A lejátszáshoz Internet kapcsolatra van szükség!')
+		teljessor('ures',5)
+		teljessorszoveggel('ures',txt['szeretnel_zenet'][nyelv],'kozep')
+		teljessorszoveggel('ures',txt['szeretnel_zenet_internet'][nyelv],'kozep')
 		ch_zene = ord(getchar())
-		if ch_zene in [105,73]: # kér zenét
+		if ch_zene in [105,73,89,121]: # kér zenét
 			zene = 'i'
-			kepernyo_torles()
 			break
 		if ch_zene in [110,78]: # nem kér zenét
 			zene = 'n'
-			kepernyo_torles()
 			break
 		else:
 			kepernyo_torles()
 
 	while True:
-		print('                                                                  \n' * 100)
-		print('Szeretnél színeket? (i/n)')
-		print('Egyes terminal alkalmazásokban nem jelennek meg helyesen.')
+		teljessor('ures',5)
+		teljessorszoveggel('ures',txt['szeretnel_szineket'][nyelv],'kozep')
+		teljessorszoveggel('ures',txt['szeretnel_szineket_warning'][nyelv],'kozep')
 		ch_szin = ord(getchar())
-		if ch_szin in [105,73]: # kér zenét
+		if ch_szin in [105,73,89,121]: # kér zenét
 			szinek = 'i'
-			kepernyo_torles()
 			break
 		if ch_szin in [110,78]: # nem kér zenét
 			szinek = 'n'
-			kepernyo_torles()
 			break
 		else:
 			kepernyo_torles()
@@ -355,8 +572,8 @@ def rajz(imp_matrix,n1,n2):
 					mtrx[x][y][:4] = d['[0,0,1,1]']
 					mtrx[x][y][1] = mtrx[x][y][1][:2] + str(mtrx[x][y][5]) +  mtrx[x][y][1][3:7] + str(mtrx[x][y][6]) + mtrx[x][y][1][-3:]
 
-		print('                                                         © 2019 mforraix')
-		print('────────────────────────────────────────────────────────────────────────')
+		teljessorszoveggel('ures','© 2019 mforraix','jobb')
+		teljessor('szimpla')
 		print('        A          B          C          D          E          F     ')
 		print('  ┌──────────────────────────────────────────────────────────────────┐')
 		j=0
@@ -380,7 +597,7 @@ def rajz(imp_matrix,n1,n2):
 			j += 1
 		print('  └──────────────────────────────────────────────────────────────────┘')
 		print('        A          B          C          D          E          F     ')
-		print('────────────────────────────────────────────────────────────────────────')
+		teljessor('szimpla')
 
 	else:
 		mtrx = copy.deepcopy(imp_matrix)
@@ -440,8 +657,8 @@ def rajz(imp_matrix,n1,n2):
 					mtrx[x][y][1] = mtrx[x][y][1][:2] + '\033[1;32m' + str(mtrx[x][y][5]) + '\033[1;m' +  mtrx[x][y][1][3:7] + '\033[1;31m' + str(mtrx[x][y][6]) + '\033[1;m' + mtrx[x][y][1][-3:]
 
 
-		print('                                                         © 2019 mforraix')
-		print('────────────────────────────────────────────────────────────────────────')
+		teljessorszoveggel('ures','© 2019 mforraix','jobb')
+		teljessor('szimpla')
 		print('        A          B          C          D          E          F     ')
 		print('  ┌──────────────────────────────────────────────────────────────────┐')
 		j=0
@@ -465,7 +682,7 @@ def rajz(imp_matrix,n1,n2):
 			j += 1
 		print('  └──────────────────────────────────────────────────────────────────┘')
 		print('        A          B          C          D          E          F     ')
-		print('────────────────────────────────────────────────────────────────────────')
+		teljessor('szimpla')
 
 #############################################
 ######## Kihúzott lap rajza #################
@@ -489,7 +706,7 @@ def laprajz_sarga(matrix,sor):
 ######## Kihúzott birtok rajza #################
 #############################################
 def birtokrajz(birtok):
-	print('                                                                  \n' * 10)
+	teljessor('ures',10)
 	
 	if birtok=='A':	
 		print(
@@ -683,15 +900,10 @@ def birtokrajz(birtok):
 			                      
 		'''
 		) 
-	print('                                                                  \n' * 8)
-	print('────────────────────────────────────────────────────────────────────────')
-
-
-
-	
-	
-	
-	print('Nyomj ENTER-t a folytatáshoz!')
+	teljessor('ures',8)
+	teljessor('szimpla')
+	teljessorszoveggel('szimpla',txt['hit_enter'][nyelv], 'kozep')
+	teljessor('szimpla')
 	input('')
 	kepernyo_torles()
 	
@@ -713,9 +925,9 @@ def check(valasz):
 ##################################		
 def cim():
 
-	print('────────────────────────────────────────────────────────────────────────')
-	print('                                                         © 2019 mforraix')
-	print('                                                                  \n' * 3)
+	teljessor('szimpla')
+	teljessorszoveggel('ures','© 2019 mforraix','jobb')
+	teljessor('ures',3)
 	print(
 	'''
 			 _____     _   _          _   
@@ -740,7 +952,7 @@ def cim():
 
 def help():
 	kepernyo_torles()
-	print('                                                                  \n' * 9)
+	teljessor('ures',9)
 	print(
 	'''
 ────────────────────────────────────────────────────────────────────────
@@ -777,7 +989,7 @@ A játék célja: minél több pont elérése.
 	input('')
 	
 	kepernyo_torles()
-	print('                                                                  \n' * 9)
+	teljessor('ures',9)
 	print(
 	'''
 ────────────────────────────────────────────────────────────────────────
@@ -814,7 +1026,7 @@ A játékos két lehetőség közül választhat:
 	input('')
 
 	kepernyo_torles()
-	print('                                                                  \n' * 9)
+	teljessor('ures',9)
 	print(
 	'''
 ────────────────────────────────────────────────────────────────────────
@@ -851,7 +1063,7 @@ vezet az adott forduló birtokáról, 1 pont jár.
 	input('')
 
 	kepernyo_torles()
-	print('                                                                  \n' * 9)
+	teljessor('ures',9)
 	print(
 	'''
 ────────────────────────────────────────────────────────────────────────
@@ -888,7 +1100,7 @@ vezet az adott forduló birtokáról, 1 pont jár.
 	input('')
 
 	kepernyo_torles()
-	print('                                                                  \n' * 9)
+	teljessor('ures',9)
 	print(
 	'''
 ────────────────────────────────────────────────────────────────────────
@@ -927,60 +1139,114 @@ Az ötödik birtok után járó pontok kiszámítása utána a játék véget é
 	
 def magamrol():
 	kepernyo_torles()
-	print('Feltöltés alatt...')
+	print(txt['under_contstruction'][nyelv])
 	print('')
 	print('https://github.com/mforrai/szuret-pasziansz')
 	input('')
 	intro()
 
-def szoveges_ertekeles(pont):
-	try:
-		if pont == -999:
-			return 'Nincs korábbi eredmény.'
-		
-		if -50 <= pont <= 20:
-			return 'lőre'
-		
-		if 20 <= pont <= 39:
-			return 'kocsisbor'
-	
-		if 40 <= pont <= 59:
-			return 'fröccsnek megteszi'
-	
-		if 60 <= pont <= 79:
-			return 'asztali bor'
+def szoveges_ertekeles(pont,nyelv):
+	if nyelv == 'hun':
+		try:
+			if pont == -999:
+				return 'Nincs korábbi eredmény.'
 			
-		if 80 <= pont <= 99:
-			return 'tájbor'
-	
-		if 100 <= pont <= 119:
-			return 'minőségi bor'
+			if -50 <= pont <= 20:
+				return 'lőre'
 			
-		if 120 <= pont <= 149:
-			return 'Grand Cru'
-	
-		if 150 <= pont <= 500:
-			return 'Grand Cru Reserve'
-	except:
-		return '-'
+			if 20 <= pont <= 39:
+				return 'kocsisbor'
+		
+			if 40 <= pont <= 59:
+				return 'fröccsnek megteszi'
+		
+			if 60 <= pont <= 79:
+				return 'asztali bor'
+				
+			if 80 <= pont <= 99:
+				return 'tájbor'
+		
+			if 100 <= pont <= 119:
+				return 'minőségi bor'
+				
+			if 120 <= pont <= 149:
+				return 'Grand Cru'
+		
+			if 150 <= pont <= 500:
+				return 'Grand Cru Reserve'
+		except:
+			return '-'
+
+	if nyelv == 'eng':
+		try:
+			if pont == -999:
+				return 'Not found previous results'
+			
+			if -50 <= pont <= 20:
+				return 'Dreadful'
+			
+			if 20 <= pont <= 39:
+				return 'Unsatisfactory'
+		
+			if 40 <= pont <= 59:
+				return 'Mediocre'
+		
+			if 60 <= pont <= 79:
+				return 'Quite good'
+				
+			if 80 <= pont <= 99:
+				return 'Pretty good'
+		
+			if 100 <= pont <= 119:
+				return 'Superb'
+				
+			if 120 <= pont <= 149:
+				return 'Excellent'
+		
+			if 150 <= pont <= 500:
+				return 'Outstanding'
+		except:
+			return '-'	
+#################################
+# def eredmeny(kor):
+# 	teljessorszoveggel('szimpla',version,'jobb')
+# 	if kor == 1:
+# 		teljessor('pottyos')
+# 
+# 	if kor == 2:
+# 		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont')
+# 	
+# 	if kor == 3:
+# 		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont, ' + kihuzott_birtokok[2] + ': ' + str(resultkor[2]) + ' pont')
+# 
+# 	if kor == 4:
+# 		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont, ' + kihuzott_birtokok[2] + ': ' + str(resultkor[2]) + ' pont, ' + kihuzott_birtokok[3] + ': ' + str(resultkor[3]) + ' pont')
+# 
+# 	if kor == 5:
+# 		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont, ' + kihuzott_birtokok[2] + ': ' + str(resultkor[2]) + ' pont, ' + kihuzott_birtokok[3] + ': ' + str(resultkor[3]) + ' pont, ' + kihuzott_birtokok[4] + ': ' + str(resultkor[4]) + ' pont')
+# 	teljessor('szimpla')
+
+######
 
 def eredmeny(kor):
-	print('──────────────────────────────────────────────────────────────── v0.93.1')
+	teljessorszoveggel('szimpla',version,'jobb')
 	if kor == 1:
-		print('........................................................................')
+		teljessor('pottyos')
 
-	if kor == 2:
-		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont')
+	if 1 < kor <= 5:
+		i=1
+		felirat = ''
+		while i < kor:
+			felirat += kihuzott_birtokok[i] + str(': ') + str(resultkor[i]) + str(' pont')
+			if i == 5:
+				break
+			else:
+				felirat += str(', ')
+			i+=1
+		teljessorszoveggel('ures',felirat,'bal')
+	teljessor('szimpla')
 	
-	if kor == 3:
-		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont, ' + kihuzott_birtokok[2] + ': ' + str(resultkor[2]) + ' pont')
-
-	if kor == 4:
-		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont, ' + kihuzott_birtokok[2] + ': ' + str(resultkor[2]) + ' pont, ' + kihuzott_birtokok[3] + ': ' + str(resultkor[3]) + ' pont')
-
-	if kor == 5:
-		print(kihuzott_birtokok[1] + ': ' + str(resultkor[1]) + ' pont, ' + kihuzott_birtokok[2] + ': ' + str(resultkor[2]) + ' pont, ' + kihuzott_birtokok[3] + ': ' + str(resultkor[3]) + ' pont, ' + kihuzott_birtokok[4] + ': ' + str(resultkor[4]) + ' pont')
-	print('────────────────────────────────────────────────────────────────────────')
+	
 #####################################
 ###### PÁLYA BETÖLTÉSE ####
 #####################################
@@ -1188,16 +1454,6 @@ kiemelt = {
 }
 
 #####################################
-################? ? ? ? ?############
-#####################################
-elem1 = [1,0,0,1]
-elem2 = [1,1,0,0]
-elem3 = [0,1,1,0]
-elem4 = [0,0,1,1]
-elem5 = [0,1,0,1]
-elem6 = [1,0,1,0] 
-
-#####################################
 ######### PAKLI #####################
 #####################################
 deck1 = [1,0,0,1,11] # 11 = szürke kártya
@@ -1238,15 +1494,15 @@ sor = 7
 def intro():
 	if oprendszer() == 'mac':	
 		kepernyo_torles()
-		print('                                                                  \n' * 9)
+		teljessor('ures',9)
 		cim()
-		print('                                                                  \n' * 3)
-		print('Legjobb eredményed: '+legmagasabb_pont()+' pont - '+szoveges_ertekeles(int(legmagasabb_pont()))+'    (*)')
-		print('────────────────────────────────────────────────────────────────────────')
-		print(' (H)elp                        (Ú)j játék                    (M)agamról ')
-		print('────────────────────────────────────────────────────────────────────────')
-		print('                                                                v0.93.1 ')
-		print('')
+		teljessor('ures',3)
+		print(txt['legjobb_eredmeny'][nyelv]+legmagasabb_pont()+txt['pont'][nyelv]+' - '+szoveges_ertekeles(int(legmagasabb_pont()),nyelv)+'    (*)')
+		teljessor('szimpla')
+		print(txt['fomenu'][nyelv])
+		teljessor('szimpla')
+		teljessorszoveggel('ures',version + ' ','jobb')
+		teljessor('ures')
 	#########################################
 	# h: 104	H:72
 	# ú: 250	Ú:218
@@ -1255,11 +1511,11 @@ def intro():
 	#########################################
 		while True:
 			ch = ord(getchar())
-			if ch in [250,218]: # új játék
+			if ch in [250,218,78,110]: # új játék
 				jatek()
 			if ch in [104,72]:	# help
 				help()
-			if ch in [109,77]:	# magamról
+			if ch in [109,77,65,97]:	# magamról
 				magamrol()
 			if ch in [42]:	# legjobb eremény rajza
 				legjobb_matrix()
@@ -1267,14 +1523,14 @@ def intro():
 				pass
 	else: #iOS miatt butított a menü
 		kepernyo_torles()
-		print('                                                                  \n' * 9)
+		teljessor('ures',9)
 		cim()
-		print('                                                                  \n' * 3)
-		print('Legjobb eredményed: '+legmagasabb_pont()+' pont')
-		print('────────────────────────────────────────────────────────────────────────')
-		print('                            ENTER: Új játék                             ')
-		print('────────────────────────────────────────────────────────────────────────')
-		print('                                                                v0.93.1 ')
+		teljessor('ures',3)
+		print(txt['legjobb_eredmeny'][nyelv]+legmagasabb_pont()+txt['pont'][nyelv]+' - '+szoveges_ertekeles(int(legmagasabb_pont()),nyelv)+'    (*)')
+		teljessor('szimpla')
+		print(txt['fomenu_ios'][nyelv])
+		teljessor('szimpla')
+		teljessorszoveggel('ures',version + ' ','jobb')
 		input('')
 		jatek()
 
@@ -1310,14 +1566,14 @@ def jatek():
 			birtok = kihuzott_birtokok[kor]
 		else:
 			birtok = birtokok.pop()
-		print(str(kor)+'. birtok: ' + birtok)
+		print(str(kor)+'. ' + txt['birtok'][nyelv]+ ': ' + birtok)
 		birtokrajz(birtok)
 	
 	# INDUL A KÖR
 		korstart[kor] = time.time()
 		kepernyo_torles()
 		eredmeny(kor)
-		print(str(kor)+'. birtok: ' + birtok)
+		print(str(kor)+'. ' + txt['birtok'][nyelv] + ': ' + birtok)
 		rajz(Matrix,oszlop,sor)
 		kukk[kor] = 0
 		i=0
@@ -1343,13 +1599,13 @@ def jatek():
 				laprajz_sarga(lap_rajz,5)
 			else:
 				laprajz(lap_rajz,5)	
-			print('Kihúzott sárga utak száma: ' + str(i))
+			print(txt['kihuzott_sarga'][nyelv] + str(i))
 			x=birtok_poziciok[birtok][0]
 			y=birtok_poziciok[birtok][1]
 			aktualis = zold_lanc(Matrix,x,y) + piros_lanc(Matrix,x,y)
-			print('Várható pontok száma a körben:',aktualis)
+			print(txt['points_expected'][nyelv], aktualis)
 			while True:
-				valasz = input('Hová helyezi az utat?')
+				valasz = input(txt['where_road'][nyelv])
 				if check(valasz) == 1:
 					y_szam = valasz[:1].upper()
 					x_szam = int(valasz[-1:])
@@ -1359,21 +1615,21 @@ def jatek():
 						kepernyo_torles()
 						break
 					else:
-						print('A megadott mezőn már van út!')
+						print(txt['field_used'][nyelv])
 				
 				else:
 					# KÖVETKEZŐ BIRTOK MEGTEKINTÉSE
-					if valasz in ['BIRTOK','birtok'] and kukk[kor] == 0 and i < 4 and kor < 5:
+					if valasz in ['BIRTOK','birtok','FARM','farm'] and kukk[kor] == 0 and i < 5 and kor < 5:
 						kihuzott_birtokok[kor+1] = birtokok.pop()
 						kepernyo_torles()
 						eredmeny(kor)
-						print(str(kor)+'. birtok: ' + birtok)
+						print(str(kor) + '. ' + txt['birtok'][nyelv] + ': ' + birtok)
 						birtokrajz(kihuzott_birtokok[kor+1])
 						kukk[kor] = 1
 						
 						# VISSZA AZ ADOTT KÖRBE
 						eredmeny(kor)
-						print(str(kor) + '. birtok: ' + birtok)
+						print(str(kor) + '. ' + txt['birtok'][nyelv] + ': ' + birtok)
 						rajz(Matrix,oszlop,sor)
 
 						kihuzott_kartya = deck.pop()
@@ -1397,21 +1653,22 @@ def jatek():
 							laprajz_sarga(lap_rajz,5)
 						else:
 							laprajz(lap_rajz,5)
-						print('Kihúzott sárga utak száma: ' + str(i))
-						print('Várható pontok száma a körben:',aktualis)
+						print(txt['kihuzott_sarga'][nyelv] + str(i))
+						print(txt['points_expected'][nyelv],aktualis)
 					else:
-						if kukk[kor] == 1 and valasz in ['BIRTOK','birtok']:
-							print('Ebben a körben már megtekintette a következő birtokot!')
+						if kukk[kor] == 1 and valasz in ['BIRTOK','birtok','FARM','farm']:
+							print(txt['kukk_happened'][nyelv])
 						else:
-							if kor == 5:
-								print('Ez az utolsó kör!')
+							if kor == 5 and valasz in ['BIRTOK','birtok','FARM','farm']:
+								print(txt['last_round'][nyelv])
+							
 							else:	
-								print('Nem létező parancs! Helyes formátum pl.: A1, D4 stb. vagy BIRTOK')
+								print(txt['not_valid_command'][nyelv])
 			
 			# ÚT ELHELYEZÉSE A MEGADOTT KOORDINÁTÁKRA
 			Matrix[x][y][:4] = kihuzott_kartya[:4]
 			eredmeny(kor)
-			print(str(kor) + '. birtok: ' + birtok)
+			print(str(kor) + '. ' + txt['birtok'][nyelv] + ': ' + birtok)
 			rajz(Matrix,oszlop,sor)
 	
 		
@@ -1423,26 +1680,26 @@ def jatek():
 		
 		if resultkor[kor-1] is not None:
 			if (resultkor[kor] <= resultkor[kor-1]) is True:
-				print('Sajnos nem haladta meg az előző birtok pontszámát. (' + str(resultkor[kor-1]) + ')')
+				print(txt['not_more'][nyelv]   + ' (' + str(resultkor[kor-1]) + ')')
 				resultkor[kor] = 0
-				print(birtok + ' birtok pontszáma: ' + str(resultkor[kor]))
+				print(birtok + txt['points_cur_round'][nyelv] + str(resultkor[kor]))
 			else:
-				print(birtok + ' birtok pontszáma: ' + str(resultkor[kor]))
+				print(birtok + txt['points_cur_round'][nyelv] + str(resultkor[kor]))
 		else:		
-			print(birtok + ' birtok pontszáma: ' + str(resultkor[kor]))
+			print(birtok + txt['points_cur_round'][nyelv] + str(resultkor[kor]))
 
 		hosszkor[kor] = copy.deepcopy(len(lanc(Matrix,x,y)))
 		kihuzott_birtokok[kor] = birtok
 		korvege[kor] = time.time()
 		if kor == 5:
-			print('────────────────────────────────────────────────────────────────────────')
-			print('────────────────────────────── V É G E ─────────────────────────────────')
-			print('────────────────── Nyomj ENTER-t a végeredményhez... ───────────────────')
-			print('────────────────────────────────────────────────────────────────────────')
+			teljessor('szimpla')
+			teljessorszoveggel('szimpla',txt['end'][nyelv],'kozep',1)
+			teljessorszoveggel('szimpla',txt['enter_results'][nyelv],'kozep')
+			teljessor('szimpla')
 			input('')
 			kepernyo_torles()
 		else:
-			input("Nyomj ENTER-t a folytatáshoz...")
+			input(txt['hit_enter'][nyelv])
 			kepernyo_torles()
 		kor += 1
 	end = time.time()
@@ -1470,33 +1727,33 @@ def jatek():
 	######### ÖSSZEGZÉS ####################
 	########################################
 	rajz(Matrix,oszlop,sor)
-	print('══════════════════════════════════════════════════════════════'+kerekitett_ido_vezeto+' s')
-	print('──────────────────────── V É G E R E D M É N Y ─────────────────────────')
-	print('════════════════════════════════════════════════════════════════════════')
-	print(kihuzott_birtokok[1] + ' birtok:                       ' + str(resultkor[1]).zfill(2) + ' pont')
-	print(kihuzott_birtokok[2] + ' birtok:                       ' + str(resultkor[2]).zfill(2) + ' pont')
-	print(kihuzott_birtokok[3] + ' birtok:                       ' + str(resultkor[3]).zfill(2) + ' pont')
-	print(kihuzott_birtokok[4] + ' birtok:                       ' + str(resultkor[4]).zfill(2) + ' pont')
-	print(kihuzott_birtokok[5] + ' birtok:                       ' + str(resultkor[5]).zfill(2) + ' pont')
-	print('────────────────────────────────────────────────────────────────────────')
+	teljessorszoveggel('dupla',str(kerekitett_ido_vezeto+' s'),'jobb')
+	teljessorszoveggel('szimpla',txt['results'][nyelv], 'kozep', 1)
+	teljessor('dupla')
+	print(kihuzott_birtokok[1] + ' '+txt['birtok'][nyelv]+':                       ' + str(resultkor[1]).zfill(2) + txt['pont'][nyelv])
+	print(kihuzott_birtokok[2] + ' '+txt['birtok'][nyelv]+':                       ' + str(resultkor[2]).zfill(2) + txt['pont'][nyelv])
+	print(kihuzott_birtokok[3] + ' '+txt['birtok'][nyelv]+':                       ' + str(resultkor[3]).zfill(2) + txt['pont'][nyelv])
+	print(kihuzott_birtokok[4] + ' '+txt['birtok'][nyelv]+':                       ' + str(resultkor[4]).zfill(2) + txt['pont'][nyelv])
+	print(kihuzott_birtokok[5] + ' '+txt['birtok'][nyelv]+':                       ' + str(resultkor[5]).zfill(2) + txt['pont'][nyelv])
+	teljessor('szimpla')
 	osszes_birtok = resultkor[1]+resultkor[2]+resultkor[3]+resultkor[4]+resultkor[5]
-	print('Összes birtok:                 ' + str(osszes_birtok).zfill(3) + ' pont')#Összesen
-	print('────────────────────────────────────────────────────────────────────────')
+	print(txt['every_birtok'][nyelv]+'               ' + str(osszes_birtok).zfill(3) + txt['pont'][nyelv])#Összesen
+	teljessor('szimpla')
 	zold_var = zold_lanc(Matrix,0,5)
 	hossz_zold = len(lanc(Matrix,0,5))
-	print('Zöld vár:                       ' + str(zold_var).zfill(2) + ' pont')# plusz a zöld vár
+	print(txt['green_castle'][nyelv]+'                 ' + str(zold_var).zfill(2) + txt['pont'][nyelv])# plusz a zöld vár
 	piros_var = piros_lanc(Matrix,6,0)
 	hossz_piros = len(lanc(Matrix,6,0))
-	print('Piros vár:                      ' + str(piros_var).zfill(2) + ' pont')# plusz a piros vár
-	print('────────────────────────────────────────────────────────────────────────')
+	print(txt['red_castle'][nyelv]+'                ' + str(piros_var).zfill(2) + txt['pont'][nyelv])# plusz a piros vár
+	teljessor('szimpla')
 	nullasok = [resultkor[1],resultkor[2],resultkor[3],resultkor[4],resultkor[5]].count(0)*(-5)
-	print('Nulla pontos körök (' + str([resultkor[1],resultkor[2],resultkor[3],resultkor[4],resultkor[5]].count(0))+ ' db):     ' + str(nullasok).zfill(2) + ' pont')# mínusz 5*(nullás várak)
-	print('════════════════════════════════════════════════════════════════════════')
+	print(txt['zero_point_rounds'][nyelv]+' (' + str([resultkor[1],resultkor[2],resultkor[3],resultkor[4],resultkor[5]].count(0))+ txt['db'][nyelv] + '):   ' + str(nullasok).zfill(2) + txt['pont'][nyelv])# mínusz 5*(nullás várak)
+	teljessor('dupla')
 	grand_total = osszes_birtok + zold_var + piros_var + nullasok # grant total
-	print('ÖSSZESEN:                      ' + str(grand_total).zfill(3) + ' pont - ' + szoveges_ertekeles(grand_total))
-	print('════════════════════════════════════════════════════════════════════════')
+	print(txt['total'][nyelv]+'                    ' + str(grand_total).zfill(3) + txt['pont'][nyelv]+' - ' + szoveges_ertekeles(grand_total,nyelv))
+	teljessor('dupla')
 	send_results_net(kihuzott_birtokok[1], resultkor[1], kihuzott_birtokok[2], resultkor[2], kihuzott_birtokok[3], resultkor[3], kihuzott_birtokok[4], resultkor[4], kihuzott_birtokok[5], resultkor[5], piros_var, zold_var, nullasok, grand_total, kerekitett_ido, koridok[1], koridok[2], koridok[3], koridok[4], koridok[5], hosszkor[1], hosszkor[2], hosszkor[3], hosszkor[4], hosszkor[5], hossz_zold, hossz_piros, mac, matrix_up)
-	print('Nyomj ENTER-t...')
+	print(txt['hit_enter'][nyelv])
 	input('')
 	intro()
 
