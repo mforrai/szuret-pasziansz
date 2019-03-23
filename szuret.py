@@ -322,8 +322,10 @@ def getchar():
 def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, birtok4, result_4, birtok5, result_5, pirosvar, zoldvar, nullasok, total, kerekitett_ido, kor1_ido, kor2_ido, kor3_ido, kor4_ido, kor5_ido, hossz1, hossz2, hossz3, hossz4, hossz5, hossz_zold, hossz_piros, mac, matrix):
 
 	url = ("http://mforrai.mooo.com:1213/szuret/insert_new.php?birtok1="+birtok1+"&result1="+str(result_1)+"&birtok2="+birtok2+"&result2="+str(result_2)+"&birtok3="+birtok3+"&result3="+str(result_3)+"&birtok4="+birtok4+"&result4="+str(result_4)+"&birtok5="+birtok5+"&result5="+str(result_5)+"&pirosvar="+str(pirosvar)+"&zoldvar="+str(zoldvar)+"&nullasok="+str(nullasok)+"&total="+str(total)+"&kerekitett_ido="+str(kerekitett_ido)+"&kor1_ido="+str(kor1_ido)+"&kor2_ido="+str(kor2_ido)+"&kor3_ido="+str(kor3_ido)+"&kor4_ido="+str(kor4_ido)+"&kor5_ido="+str(kor5_ido)+"&hossz1="+str(hossz1)+"&hossz2="+str(hossz2)+"&hossz3="+str(hossz3)+"&hossz4="+str(hossz4)+"&hossz5="+str(hossz5)+"&hossz_zold="+str(hossz_zold)+"&hossz_piros="+str(hossz_piros)+"&macaddress="+str(mac)+"&matrix="+str(matrix))
-	r = requests.get(url)
-
+	try:
+		r = requests.get(url)
+	except:
+		pass
 
 
 ###########################################################
