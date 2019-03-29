@@ -20,9 +20,9 @@ version = 'v1.1'
 nyelv = 'hun'
 ydim=72
 xdim=63
-#############################################!
-#### MAC address lementése ##################
-#############################################
+###################################################################
+#### MAC address lementése  ################### ##################
+###################################################################
 from uuid import getnode as get_mac
 try:
 	mc = get_mac()
@@ -284,6 +284,10 @@ txt = {
 		'eng' : 'RESULTS'
 		},
 
+	'add_nick' : {
+		'hun' : 'Add meg a neved, majd nyomj ENTER-t!',
+		'eng' : 'Give a nick name and hit ENTER...'
+		}
 
 
 }
@@ -327,7 +331,25 @@ def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, bi
 	except:
 		pass
 
+###########################################################
+# NICK FELKÜLDÉSE SZERVERRE ###########################
+###########################################################
+def query_nick(mac):
+	url = ("http://mforrai.mooo.com:1213/szuret/query_nick.php?mac="+mac)
+	try:
+		r = requests.get(url)
+		nick = str(r.content.decode("utf-8"))	
+		return nick
+	except:
+		nick = ''
+		return nick
 
+def send_nick(mac,nick):
+	url = ("http://mforrai.mooo.com:1213/szuret/add_nick.php?mac="+mac+"&nev="+nick)
+	try:
+		r = requests.get(url)
+	except:
+		pass
 ###########################################################
 # KORÁBBI LEGNAGYOBB EREDMÉNYEM ###########################
 ###########################################################
@@ -1499,7 +1521,7 @@ def intro():
 		teljessor('ures',9)
 		cim()
 		teljessor('ures',3)
-		print(txt['legjobb_eredmeny'][nyelv]+legmagasabb_pont()+txt['pont'][nyelv]+' - '+szoveges_ertekeles(int(legmagasabb_pont()),nyelv)+'    (*)')
+		print(txt['legjobb_eredmeny'][nyelv]+legmagasabb_pont()+txt['pont'][nyelv]+' - '+szoveges_ertekeles(int(legmagasabb_pont()),nyelv)+'    (*) - '+query_nick(mac))
 		teljessor('szimpla')
 		print(txt['fomenu'][nyelv])
 		teljessor('szimpla')
@@ -1755,8 +1777,14 @@ def jatek():
 	print(txt['total'][nyelv]+'                    ' + str(grand_total).zfill(3) + txt['pont'][nyelv]+' - ' + szoveges_ertekeles(grand_total,nyelv))
 	teljessor('dupla')
 	send_results_net(kihuzott_birtokok[1], resultkor[1], kihuzott_birtokok[2], resultkor[2], kihuzott_birtokok[3], resultkor[3], kihuzott_birtokok[4], resultkor[4], kihuzott_birtokok[5], resultkor[5], piros_var, zold_var, nullasok, grand_total, kerekitett_ido, koridok[1], koridok[2], koridok[3], koridok[4], koridok[5], hosszkor[1], hosszkor[2], hosszkor[3], hosszkor[4], hosszkor[5], hossz_zold, hossz_piros, mac, matrix_up)
-	print(txt['hit_enter'][nyelv])
-	input('')
+	
+	if query_nick(mac) == '' or None:
+		teljessorszoveggel('ures',txt['add_nick'][nyelv],'kozep')
+		a = ''
+		nick = input(a.center(int(ydim/2)))	
+		send_nick(mac, nick)
+	else:
+		print(txt['hit_enter'][nyelv])
 	intro()
 
 ##############################################################################
