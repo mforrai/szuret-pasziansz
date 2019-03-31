@@ -16,7 +16,7 @@ import urllib.parse
 # print(platform.release())
 #print(platform.platform())
 
-version = 'v1.1'
+version = 'v1.2'
 nyelv = 'hun'
 ydim=72
 xdim=63
@@ -327,17 +327,46 @@ def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, bi
 
 	url = ("http://mforrai.mooo.com:1213/szuret/insert_new.php?birtok1="+birtok1+"&result1="+str(result_1)+"&birtok2="+birtok2+"&result2="+str(result_2)+"&birtok3="+birtok3+"&result3="+str(result_3)+"&birtok4="+birtok4+"&result4="+str(result_4)+"&birtok5="+birtok5+"&result5="+str(result_5)+"&pirosvar="+str(pirosvar)+"&zoldvar="+str(zoldvar)+"&nullasok="+str(nullasok)+"&total="+str(total)+"&kerekitett_ido="+str(kerekitett_ido)+"&kor1_ido="+str(kor1_ido)+"&kor2_ido="+str(kor2_ido)+"&kor3_ido="+str(kor3_ido)+"&kor4_ido="+str(kor4_ido)+"&kor5_ido="+str(kor5_ido)+"&hossz1="+str(hossz1)+"&hossz2="+str(hossz2)+"&hossz3="+str(hossz3)+"&hossz4="+str(hossz4)+"&hossz5="+str(hossz5)+"&hossz_zold="+str(hossz_zold)+"&hossz_piros="+str(hossz_piros)+"&macaddress="+str(mac)+"&matrix="+str(matrix))
 	try:
-		r = requests.get(url)
+		r = requests.get(url, timeout=3)
 	except:
 		pass
 
 ###########################################################
-# NICK FELKÜLDÉSE SZERVERRE ###########################
+# BEÁLLÍTÁSOK LEKÉRDEZÉSE    ###########################
+###########################################################
+global beallitasok
+def query_settings():
+	global mac
+	url = ("http://mforrai.mooo.com:1213/szuret/query_settings.php?mac="+mac)
+	try:
+		r = requests.get(url, timeout=3)
+		settings = str(r.content.decode("utf-8"))	
+		global beallitasok
+		beallitasok = {
+			'nyelv' : settings[0],
+			'zene'  : settings[1],
+			'szin'  : settings[2]
+		}
+		return 1
+		
+	except:
+		settings = ''
+		return 0
+
+def send_settings(mac,nyelv,zene,szin):
+	url = ("http://mforrai.mooo.com:1213/szuret/add_settings.php?mac="+mac+"&nyelv="+nyelv+"&zene="+zene+"&szin="+szin)
+	try:
+		r = requests.get(url, timeout=3)
+	except:
+		pass
+
+###########################################################
+# NICK LEKÉRDEZÉS ÉS FELKÜLDÉSE SZERVERRE ###########################
 ###########################################################
 def query_nick(mac):
 	url = ("http://mforrai.mooo.com:1213/szuret/query_nick.php?mac="+mac)
 	try:
-		r = requests.get(url)
+		r = requests.get(url, timeout=3)
 		nick = str(r.content.decode("utf-8"))	
 		return nick
 	except:
@@ -347,7 +376,7 @@ def query_nick(mac):
 def send_nick(mac,nick):
 	url = ("http://mforrai.mooo.com:1213/szuret/add_nick.php?mac="+mac+"&nev="+nick)
 	try:
-		r = requests.get(url)
+		r = requests.get(url, timeout=3)
 	except:
 		pass
 ###########################################################
@@ -356,7 +385,7 @@ def send_nick(mac,nick):
 def legmagasabb_pont():
 	url = ("http://mforrai.mooo.com:1213/szuret/sajat_eredmenyek_lekerdezese.php?mac="+mac)
 	try:
-		r = requests.get(url)
+		r = requests.get(url, timeout=3)
 		pontszam = str(r.content.decode("utf-8"))	
 	except:
 		pontszam = '-999'
@@ -377,7 +406,7 @@ def convert_str2int(a):
 def legjobb_matrix():
 	try:
 		url = ("http://mforrai.mooo.com:1213/szuret/legjobb_matrix.php?mac="+mac)
-		r = requests.get(url)
+		r = requests.get(url, timeout=3)
 		matrix = str(r.content.decode("utf-8")).replace("vesszo","'")
 		matrix = matrix.replace("[","")
 		matrix = matrix.replace("]","")
@@ -413,51 +442,69 @@ def legjobb_matrix():
 #### NYELV + ZENE + SZÍNEK ###################
 ######################################
 if oprendszer() == 'mac':
-	while True:
-		teljessor('ures',20)
-		teljessorszoveggel('ures','1: magyar','kozep')
-		teljessorszoveggel('ures','2: english','kozep')
-		ch_nyelv = ord(getchar())
-		if ch_nyelv in [49]: # magyar
-			nyelv = 'hun'
-			break
-		if ch_nyelv in [50]: # angol
-			nyelv = 'eng'
-			break
-		else:
-			kepernyo_torles()
-			
-	import wget
-	while True:
-		teljessor('ures',5)
-		teljessorszoveggel('ures',txt['szeretnel_zenet'][nyelv],'kozep')
-		teljessorszoveggel('ures',txt['szeretnel_zenet_internet'][nyelv],'kozep')
-		ch_zene = ord(getchar())
-		if ch_zene in [105,73,89,121]: # kér zenét
-			zene = 'i'
-			break
-		if ch_zene in [110,78]: # nem kér zenét
-			zene = 'n'
-			break
-		else:
-			kepernyo_torles()
-
-	while True:
-		teljessor('ures',5)
-		teljessorszoveggel('ures',txt['szeretnel_szineket'][nyelv],'kozep')
-		teljessorszoveggel('ures',txt['szeretnel_szineket_warning'][nyelv],'kozep')
-		ch_szin = ord(getchar())
-		if ch_szin in [105,73,89,121]: # kér zenét
-			szinek = 'i'
-			break
-		if ch_szin in [110,78]: # nem kér zenét
-			szinek = 'n'
-			break
-		else:
-			kepernyo_torles()
+	if query_settings() == 1:
 	
+		if beallitasok['nyelv'] == '1':
+			nyelv = 'hun'
+		if beallitasok['nyelv'] == '2':
+			nyelv = 'eng'
+		########
+		if beallitasok['zene'] == '1':
+			zene = 'i'
+		if beallitasok['zene'] == '0':
+			zene = 'n'
+		########
+		if beallitasok['szin'] == '1':
+			szinek = 'i'
+		if beallitasok['szin'] == '0':
+			szinek = 'n'
+	
+	if query_settings() == 0:
+		while True:
+			teljessor('ures',20)
+			teljessorszoveggel('ures','1: magyar','kozep')
+			teljessorszoveggel('ures','2: english','kozep')
+			ch_nyelv = ord(getchar())
+			if ch_nyelv in [49]: # magyar
+				nyelv = 'hun'
+				break
+			if ch_nyelv in [50]: # angol
+				nyelv = 'eng'
+				break
+			else:
+				kepernyo_torles()
+			
+		while True:
+			teljessor('ures',5)
+			teljessorszoveggel('ures',txt['szeretnel_zenet'][nyelv],'kozep')
+			teljessorszoveggel('ures',txt['szeretnel_zenet_internet'][nyelv],'kozep')
+			ch_zene = ord(getchar())
+			if ch_zene in [105,73,89,121]: # kér zenét
+				zene = 'i'
+				break
+			if ch_zene in [110,78]: # nem kér zenét
+				zene = 'n'
+				break
+			else:
+				kepernyo_torles()
+	
+		while True:
+			teljessor('ures',5)
+			teljessorszoveggel('ures',txt['szeretnel_szineket'][nyelv],'kozep')
+			teljessorszoveggel('ures',txt['szeretnel_szineket_warning'][nyelv],'kozep')
+			ch_szin = ord(getchar())
+			if ch_szin in [105,73,89,121]: # kér színeket
+				szinek = 'i'
+				break
+			if ch_szin in [110,78]: # nem kér színeket
+				szinek = 'n'
+				break
+			else:
+				kepernyo_torles()
+
 	if zene == 'i':
 		try:
+			import wget
 			import contextlib
 			with contextlib.redirect_stdout(None):
 				import pygame,os
@@ -1550,7 +1597,7 @@ def intro():
 		teljessor('ures',9)
 		cim()
 		teljessor('ures',3)
-		print(txt['legjobb_eredmeny'][nyelv]+legmagasabb_pont()+txt['pont'][nyelv]+' - '+szoveges_ertekeles(int(legmagasabb_pont()),nyelv)+'    (*)')
+		print(txt['legjobb_eredmeny'][nyelv]+legmagasabb_pont()+txt['pont'][nyelv]+' - '+szoveges_ertekeles(int(legmagasabb_pont()),nyelv)+'    (*) - '+query_nick(mac))
 		teljessor('szimpla')
 		print(txt['fomenu_ios'][nyelv])
 		teljessor('szimpla')
@@ -1686,8 +1733,11 @@ def jatek():
 							if kor == 5 and valasz in ['BIRTOK','birtok','FARM','farm']:
 								print(txt['last_round'][nyelv])
 							
-							else:	
-								print(txt['not_valid_command'][nyelv])
+							else:
+								if valasz in ['EXIT','exit']:
+									intro()
+								else:	
+									print(txt['not_valid_command'][nyelv])
 			
 			# ÚT ELHELYEZÉSE A MEGADOTT KOORDINÁTÁKRA
 			Matrix[x][y][:4] = kihuzott_kartya[:4]
@@ -1783,6 +1833,7 @@ def jatek():
 		a = ''
 		nick = input(a.center(int(ydim/2)))	
 		send_nick(mac, nick)
+		send_settings(mac, nyelv, zene, szinek)
 	else:
 		print(txt['hit_enter'][nyelv])
 	intro()
