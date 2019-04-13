@@ -14,10 +14,11 @@ import random
 import secrets
 
 
-#print(os.name)
+# print(os.name)
 # print(platform.system())
 # print(platform.release())
-#print(platform.platform())
+# print(platform.platform())
+# input()
 
 version = 'v1.2'
 nyelv = 'hun'
@@ -44,7 +45,6 @@ def oprendszer():
 			return 'ios'
 		else:
 			return 'mac'
-
 ###################################################
 ###### KÉPERNYŐ TÖRLÉS - iOS, Linux/OSX, Windows###
 ###################################################
@@ -169,7 +169,8 @@ txt = {
 
 	'fomenu' : {
 		'hun' : ' (H)elp                        (Ú)j játék                    (M)agamról ',
-		'eng' : ' (H)elp                        (N)ew game                    (A)bout    '
+		'hun' : ' (H)elp         (Ú)j játék         (T)öbb játékos            (M)agamról ',
+		'eng' : ' (H)elp         (N)ew game         (T)wo players             (A)bout    '
 		},
 
 	'fomenu_ios' : {
@@ -347,20 +348,24 @@ def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, bi
 ###########################################################
 # BEÁLLÍTÁSOK LEKÉRDEZÉSE    ###########################
 ###########################################################
-global beallitasok
 def query_settings():
 	global mac
 	url = ("http://mforrai.mooo.com:1213/szuret/query_settings.php?mac="+mac)
 	try:
-		r = retry_db().get(url,)
-		settings = str(r.content.decode("utf-8"))
-		global beallitasok
-		beallitasok = {
-			'nyelv' : settings[0],
-			'zene'  : settings[1],
-			'szin'  : settings[2]
-		}
-		return 1
+		while 1:
+			r = retry_db().get(url,)
+			settings = str(r.content.decode("utf-8"))
+			if settings != '':
+				global beallitasok
+				beallitasok = {
+					'nyelv' : settings[0],
+					'zene'  : settings[1],
+					'szin'  : settings[2]
+				}
+				break
+			else:
+				time.sleep(1)
+			return 1
 
 	except:
 		settings = ''
@@ -456,7 +461,6 @@ def legjobb_matrix():
 ######################################
 if oprendszer() == 'mac':
 	if query_settings() == 1:
-
 		if beallitasok['nyelv'] == '1':
 			nyelv = 'hun'
 		if beallitasok['nyelv'] == '2':
@@ -1033,6 +1037,13 @@ def cim():
 	'''
 	)
 
+def multi_choose():
+
+	teljessorszoveggel('ures','1. Új játék indítása','kozep')
+	teljessorszoveggel('ures','2. Csatlakozás...','kozep')
+	teljessor('ures',3)
+
+
 def help():
 	kepernyo_torles()
 	teljessor('ures',9)
@@ -1597,7 +1608,7 @@ def intro():
 	#########################################
 		while True:
 			ch = ord(getchar())
-			if ch in [113]:	# MULTIPLAYER
+			if ch in [116,84]:	# MULTIPLAYER
 				multi()
 			if ch in [250,218,78,110]: # új játék
 				jatek()
@@ -1972,7 +1983,6 @@ def upload_birtokok (game,birtokok):
 	else:
 		pass
 
-
 ######################
 def upload_aktualis_kartya(kartya, hanyadik, game):
 	url = ("http://mforrai.mooo.com:1213/szuret/multi_upload_kartya.php?game="+str(game)+"&aktualis_kartya="+str(kartya)+"&hanyadik_kartya="+str(hanyadik))
@@ -2012,7 +2022,8 @@ def choose_free_game():
 	try:
 		r = retry_db().get(url,)
 		game = str(r.content.decode("utf-8"))
-		print(game)
+		if game == '':
+			return 0
 		return game
 	except Exception as x:
 		print('It failed: (', x.__class__.__name__)
@@ -2034,9 +2045,21 @@ def string2kartya(string):
 	kartya.append(int(string[3]))
 	kartya.append(int(string[4]+string[5]))
 	return kartya
+
 #################################################
 def multi():
-	valasztas = input('Hostolsz vagy connect-elsz?')
+	multi_choose()
+	while True:
+		ch = ord(getchar())
+		if ch in [49]:	# MULTIPLAYER
+			valasztas = 'host'
+			break
+		if ch in [50]:	# MULTIPLAYER
+			valasztas = 'connect'
+			break
+		else:
+			pass
+
 	if valasztas == 'host':
 	#	hosted_game = str(random.randint(1,9999))
 		hosted_game = secrets.token_hex(25)
@@ -2049,13 +2072,26 @@ def multi():
 			pass
 
 	if valasztas == 'connect':
-		# game = str(input('Játék száma?'))
+		wait_s = 1
+		while 1:
+			print('Kapcsolódás' + wait_s*'.'+'\r', end='')
+			time.sleep(1)
+			wait_s += 1
+			game = str(choose_free_game())
+			if wait_s == ydim-27:
+				print()
+				print('Sajnos nincs elérhető játékos...')
+				time.sleep(5)
+				intro()
+			if game != '0':
+				break
+			else:
+				time.sleep(1)
 		game = str(choose_free_game())
 		iamhost = 0
 		url = ("http://mforrai.mooo.com:1213/szuret/multi_connect_game.php?game="+game)
 		try:
 			r = retry_db().get(url,)
-			print('Kapcsolódás...')
 		except:
 			pass
 
@@ -2093,25 +2129,22 @@ def multi():
 
 ################################################################################################################
 	if iamhost == 1:
+		print('Játék azonosítója: '+str(game))
+		wait_s = 1
 		while 1:	#várakozás a másik játékosra
 			player_status(game,'hostunready')
-			kepernyo_torles()
-			print('Játék azonosítója: '+str(game))
-			print('Várakozás a másik játékosra...',)
 			if int(is_ready(game,'2nd_player')) == 1:
 				break
 			else:
+				print('Várakozás a másik játékosra' + wait_s*'.'+'\r', end='')
 				time.sleep(1)
-
+				wait_s += 1
+				if wait_s == ydim-27:
+					print()
+					print('Sajnos nincs elérhető játékos...')
+					time.sleep(5)
+					intro()
 	if iamhost == 0:
-		# while 1:	#várakozás a másik játékosra
-		# 	kepernyo_torles()
-		# 	print('Játék azonosítója: '+str(game))
-		# 	print('Várakozás a másik játékosra...',)
-		# 	if int(is_ready(game,'host')) == 1:
-		# 		break
-		# 	else:
-		# 		time.sleep(1)
 		pass
 ################################################################################################################
 
