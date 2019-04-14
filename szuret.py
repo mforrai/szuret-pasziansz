@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# modulok importálása
 from random import shuffle
 import copy
 import os
@@ -13,20 +14,19 @@ import urllib.parse
 import random
 import secrets
 
-
 # print(os.name)
 # print(platform.system())
 # print(platform.release())
 # print(platform.platform())
 # input()
 
+# paraméterek
 version = 'v1.2'
 nyelv = 'hun'
 ydim=72
 xdim=63
-###################################################################
-#### MAC address lementése  ################### ##################
-###################################################################
+
+# MAC address lementése
 from uuid import getnode as get_mac
 try:
 	mc = get_mac()
@@ -34,9 +34,11 @@ try:
 except:
 	print('Nincs Internet kapcsolat!')
 
-############################
-#### Milyen op.rendszer??###
-############################
+###################################################
+# FÜGGVÉNYEK
+###################################################
+
+# oprendszer lekérdezése
 def oprendszer():
 	if os.name == 'nt':
 		return 'win'
@@ -45,6 +47,7 @@ def oprendszer():
 			return 'ios'
 		else:
 			return 'mac'
+
 ###################################################
 ###### KÉPERNYŐ TÖRLÉS - iOS, Linux/OSX, Windows###
 ###################################################
@@ -2016,6 +2019,17 @@ def player_status(game, who):
 		pass
 
 ######################
+def multi_results(game, mac):
+	url = ("http://mforrai.mooo.com:1213/szuret/multi_query_results.php?game="+str(game)+"&mac="+str(mac))
+	try:
+		r = retry_db().get(url,)
+		opponent_result = str(r.content.decode("utf-8"))
+		return opponent_result
+	except Exception as x:
+		print('It failed: (', x.__class__.__name__)
+	else:
+		pass
+######################
 def choose_free_game():
 	# hostready, connectready, hostunready, connectunready
 	url = ("http://mforrai.mooo.com:1213/szuret/query_free_host.php")
@@ -2153,8 +2167,8 @@ def multi():
 		if iamhost == 1:
 			player_status(game,'hostunready')
 			while 1:	#várakozás a másik játékosra
-				kepernyo_torles()
-				print('Várakozás a másik játékosra... (kör vége)',)
+				# kepernyo_torles()
+				print('Várakozás a másik játékosra...',)
 				if int(is_ready(game,'mehet2')) == 1:
 					player_status(game, 'nem_mehet2')
 					break
@@ -2187,8 +2201,7 @@ def multi():
 		if iamhost == 0:
 			# player_status(game,'connectready')
 			while 1:
-					print(kor)
-					print('Várakozás a másik játékosra... (birtok felfedése)')
+					print('Várakozás a másik játékosra...')
 					while 1:	#várakozás a másik játékosra
 						if int(is_ready(game,'host')) == 1:
 							break
@@ -2220,8 +2233,7 @@ def multi():
 		# INDUL A KÖR
 		if iamhost == 1:
 			while 1:	#várakozás a másik játékosra
-				kepernyo_torles()
-				print('Várakozás a másik játékosra... (bla...bla...bla)',)
+				print('Várakozás a másik játékosra...',)
 				if int(is_ready(game,'mehet2')) == 1:
 					break
 				else:
@@ -2243,8 +2255,7 @@ def multi():
 				player_status(game,'nem_mehet1')
 				player_status(game,'nem_mehet2')
 				while 1:	#várakozás a másik játékosra
-					kepernyo_torles()
-					print('Várakozás a másik játékosra...  sárga számolásnál',)
+					print('Várakozás a másik játékosra...',)
 					if int(is_ready(game,'connect')) == 1:
 						player_status(game,'connectunready')
 						break
@@ -2253,8 +2264,7 @@ def multi():
 
 			if iamhost == 0:
 				while 1:	#várakozás a másik játékosra
-					kepernyo_torles()
-					print('Várakozás a másik játékosra... sárga számolásnál',)
+					print('Várakozás a másik játékosra...',)
 					if int(is_ready(game,'host')) == 1:
 						break
 					else:
@@ -2353,7 +2363,7 @@ def multi():
 							player_status(game,'connectready')
 
 
-						print('Várakozás a másik játékosra... lapoknál',)
+						print('Várakozás a másik játékosra...',)
 						if iamhost == 1:
 							while 1:	#várakozás a másik játékosra
 								if int(is_ready(game,'connect')) == 1:
@@ -2469,7 +2479,7 @@ def multi():
 				player_status(game,'connectready')
 ################################################################################################################
 
-			print('Várakozás a másik játékosra... útrakás után',)
+			print('Várakozás a másik játékosra...',)
 			if iamhost == 1:
 				while 1:	#várakozás a másik játékosra
 					if int(is_ready(game,'connect')) == 1:
@@ -2574,10 +2584,11 @@ def multi():
 	nullasok = [resultkor[1],resultkor[2],resultkor[3],resultkor[4],resultkor[5]].count(0)*(-5)
 	print(txt['zero_point_rounds'][nyelv]+' (' + str([resultkor[1],resultkor[2],resultkor[3],resultkor[4],resultkor[5]].count(0))+ txt['db'][nyelv] + '):   ' + str(nullasok).zfill(2) + txt['pont'][nyelv])# mínusz 5*(nullás várak)
 	teljessor('dupla')
-	grand_total = osszes_birtok + zold_var + piros_var + nullasok # grant total
+	grand_total = osszes_birtok + zold_var + piros_var + nullasok # grand total
 	print(txt['total'][nyelv]+'                    ' + str(grand_total).zfill(3) + txt['pont'][nyelv]+' - ' + szoveges_ertekeles(grand_total,nyelv))
 	teljessor('dupla')
 	# send_results_net(kihuzott_birtokok[1], resultkor[1], kihuzott_birtokok[2], resultkor[2], kihuzott_birtokok[3], resultkor[3], kihuzott_birtokok[4], resultkor[4], kihuzott_birtokok[5], resultkor[5], piros_var, zold_var, nullasok, grand_total, kerekitett_ido, koridok[1], koridok[2], koridok[3], koridok[4], koridok[5], hosszkor[1], hosszkor[2], hosszkor[3], hosszkor[4], hosszkor[5], hossz_zold, hossz_piros, mac, matrix_up,game)
+	send_results_net(kihuzott_birtokok[1], resultkor[1], kihuzott_birtokok[2], resultkor[2], kihuzott_birtokok[3], resultkor[3], kihuzott_birtokok[4], resultkor[4], kihuzott_birtokok[5], resultkor[5], piros_var, zold_var, nullasok, grand_total, kerekitett_ido, koridok[1], koridok[2], koridok[3], koridok[4], koridok[5], hosszkor[1], hosszkor[2], hosszkor[3], hosszkor[4], hosszkor[5], hossz_zold, hossz_piros, mac, matrix_up,game)
 	if query_nick(mac) == '' or None:
 		teljessorszoveggel('ures',txt['add_nick'][nyelv],'kozep')
 		a = ''
@@ -2587,8 +2598,11 @@ def multi():
 	else:
 		print(txt['hit_enter'][nyelv])
 		input('')
-	send_results_net(kihuzott_birtokok[1], resultkor[1], kihuzott_birtokok[2], resultkor[2], kihuzott_birtokok[3], resultkor[3], kihuzott_birtokok[4], resultkor[4], kihuzott_birtokok[5], resultkor[5], piros_var, zold_var, nullasok, grand_total, kerekitett_ido, koridok[1], koridok[2], koridok[3], koridok[4], koridok[5], hosszkor[1], hosszkor[2], hosszkor[3], hosszkor[4], hosszkor[5], hossz_zold, hossz_piros, mac, matrix_up,game)
-
+	kepernyo_torles()
+	print('Saját pontszám: ' + str(grand_total))
+	print('Ellenfél pontszáma: ' + str(multi_results(game,mac)))
+	print(txt['hit_enter'][nyelv])
+	input('')
 	intro()
 
 ##############################################################################
