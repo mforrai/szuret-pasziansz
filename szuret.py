@@ -21,10 +21,11 @@ import secrets
 # input()
 
 # paraméterek
-version = 'v1.2'
+version = 'v1.3'
 nyelv = 'hun'
 ydim=72
 xdim=63
+host_address = 'http://mforrai.mooo.com:1213/szuret/'
 
 # MAC address lementése
 from uuid import getnode as get_mac
@@ -332,7 +333,7 @@ def getchar():
 ###########################################################
 # def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, birtok4, result_4, birtok5, result_5, pirosvar, zoldvar, nullasok, total, kerekitett_ido, kor1_ido, kor2_ido, kor3_ido, kor4_ido, kor5_ido, hossz1, hossz2, hossz3, hossz4, hossz5, hossz_zold, hossz_piros, mac, matrix):
 #
-# 	url = ("http://mforrai.mooo.com:1213/szuret/insert_new.php?birtok1="+birtok1+"&result1="+str(result_1)+"&birtok2="+birtok2+"&result2="+str(result_2)+"&birtok3="+birtok3+"&result3="+str(result_3)+"&birtok4="+birtok4+"&result4="+str(result_4)+"&birtok5="+birtok5+"&result5="+str(result_5)+"&pirosvar="+str(pirosvar)+"&zoldvar="+str(zoldvar)+"&nullasok="+str(nullasok)+"&total="+str(total)+"&kerekitett_ido="+str(kerekitett_ido)+"&kor1_ido="+str(kor1_ido)+"&kor2_ido="+str(kor2_ido)+"&kor3_ido="+str(kor3_ido)+"&kor4_ido="+str(kor4_ido)+"&kor5_ido="+str(kor5_ido)+"&hossz1="+str(hossz1)+"&hossz2="+str(hossz2)+"&hossz3="+str(hossz3)+"&hossz4="+str(hossz4)+"&hossz5="+str(hossz5)+"&hossz_zold="+str(hossz_zold)+"&hossz_piros="+str(hossz_piros)+"&macaddress="+str(mac)+"&matrix="+str(matrix))
+# 	url = (host_address+"insert_new.php?birtok1="+birtok1+"&result1="+str(result_1)+"&birtok2="+birtok2+"&result2="+str(result_2)+"&birtok3="+birtok3+"&result3="+str(result_3)+"&birtok4="+birtok4+"&result4="+str(result_4)+"&birtok5="+birtok5+"&result5="+str(result_5)+"&pirosvar="+str(pirosvar)+"&zoldvar="+str(zoldvar)+"&nullasok="+str(nullasok)+"&total="+str(total)+"&kerekitett_ido="+str(kerekitett_ido)+"&kor1_ido="+str(kor1_ido)+"&kor2_ido="+str(kor2_ido)+"&kor3_ido="+str(kor3_ido)+"&kor4_ido="+str(kor4_ido)+"&kor5_ido="+str(kor5_ido)+"&hossz1="+str(hossz1)+"&hossz2="+str(hossz2)+"&hossz3="+str(hossz3)+"&hossz4="+str(hossz4)+"&hossz5="+str(hossz5)+"&hossz_zold="+str(hossz_zold)+"&hossz_piros="+str(hossz_piros)+"&macaddress="+str(mac)+"&matrix="+str(matrix))
 # 	try:
 # 		r = retry_db().get(url,)
 # 	except:
@@ -340,7 +341,7 @@ def getchar():
 
 def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, birtok4, result_4, birtok5, result_5, pirosvar, zoldvar, nullasok, total, kerekitett_ido, kor1_ido, kor2_ido, kor3_ido, kor4_ido, kor5_ido, hossz1, hossz2, hossz3, hossz4, hossz5, hossz_zold, hossz_piros, mac, matrix, multiplayer_hash=0):
 
-	url = ("http://mforrai.mooo.com:1213/szuret/insert_new.php?birtok1="+birtok1+"&result1="+str(result_1)+"&birtok2="+birtok2+"&result2="+str(result_2)+"&birtok3="+birtok3+"&result3="+str(result_3)+"&birtok4="+birtok4+"&result4="+str(result_4)+"&birtok5="+birtok5+"&result5="+str(result_5)+"&pirosvar="+str(pirosvar)+"&zoldvar="+str(zoldvar)+"&nullasok="+str(nullasok)+"&total="+str(total)+"&kerekitett_ido="+str(kerekitett_ido)+"&kor1_ido="+str(kor1_ido)+"&kor2_ido="+str(kor2_ido)+"&kor3_ido="+str(kor3_ido)+"&kor4_ido="+str(kor4_ido)+"&kor5_ido="+str(kor5_ido)+"&hossz1="+str(hossz1)+"&hossz2="+str(hossz2)+"&hossz3="+str(hossz3)+"&hossz4="+str(hossz4)+"&hossz5="+str(hossz5)+"&hossz_zold="+str(hossz_zold)+"&hossz_piros="+str(hossz_piros)+"&macaddress="+str(mac)+"&matrix="+str(matrix)+"&multiplayer_hash="+str(multiplayer_hash))
+	url = (host_address+"insert_new.php?birtok1="+birtok1+"&result1="+str(result_1)+"&birtok2="+birtok2+"&result2="+str(result_2)+"&birtok3="+birtok3+"&result3="+str(result_3)+"&birtok4="+birtok4+"&result4="+str(result_4)+"&birtok5="+birtok5+"&result5="+str(result_5)+"&pirosvar="+str(pirosvar)+"&zoldvar="+str(zoldvar)+"&nullasok="+str(nullasok)+"&total="+str(total)+"&kerekitett_ido="+str(kerekitett_ido)+"&kor1_ido="+str(kor1_ido)+"&kor2_ido="+str(kor2_ido)+"&kor3_ido="+str(kor3_ido)+"&kor4_ido="+str(kor4_ido)+"&kor5_ido="+str(kor5_ido)+"&hossz1="+str(hossz1)+"&hossz2="+str(hossz2)+"&hossz3="+str(hossz3)+"&hossz4="+str(hossz4)+"&hossz5="+str(hossz5)+"&hossz_zold="+str(hossz_zold)+"&hossz_piros="+str(hossz_piros)+"&macaddress="+str(mac)+"&matrix="+str(matrix)+"&multiplayer_hash="+str(multiplayer_hash))
 	try:
 		r = retry_db().get(url,)
 	except:
@@ -353,7 +354,7 @@ def send_results_net(birtok1, result_1, birtok2, result_2, birtok3, result_3, bi
 ###########################################################
 def query_settings():
 	global mac
-	url = ("http://mforrai.mooo.com:1213/szuret/query_settings.php?mac="+mac)
+	url = (host_address+"query_settings.php?mac="+mac)
 	try:
 		while 1:
 			r = retry_db().get(url,)
@@ -375,7 +376,7 @@ def query_settings():
 		return 0
 
 def send_settings(mac,nyelv,zene,szin):
-	url = ("http://mforrai.mooo.com:1213/szuret/add_settings.php?mac="+mac+"&nyelv="+nyelv+"&zene="+zene+"&szin="+szin)
+	url = (host_address+"add_settings.php?mac="+mac+"&nyelv="+nyelv+"&zene="+zene+"&szin="+szin)
 	try:
 		r = retry_db().get(url,)
 	except:
@@ -385,7 +386,7 @@ def send_settings(mac,nyelv,zene,szin):
 # NICK LEKÉRDEZÉS ÉS FELKÜLDÉSE SZERVERRE ###########################
 ###########################################################
 def query_nick(mac):
-	url = ("http://mforrai.mooo.com:1213/szuret/query_nick.php?mac="+mac)
+	url = (host_address+"query_nick.php?mac="+mac)
 	try:
 		r = retry_db().get(url,)
 		nick = str(r.content.decode("utf-8"))
@@ -395,7 +396,7 @@ def query_nick(mac):
 		return nick
 
 def send_nick(mac,nick):
-	url = ("http://mforrai.mooo.com:1213/szuret/add_nick.php?mac="+mac+"&nev="+nick)
+	url = (host_address+"add_nick.php?mac="+mac+"&nev="+nick)
 	try:
 		r = retry_db().get(url,)
 	except:
@@ -404,7 +405,7 @@ def send_nick(mac,nick):
 # KORÁBBI LEGNAGYOBB EREDMÉNYEM ###########################
 ###########################################################
 def legmagasabb_pont():
-	url = ("http://mforrai.mooo.com:1213/szuret/sajat_eredmenyek_lekerdezese.php?mac="+mac)
+	url = (host_address+"sajat_eredmenyek_lekerdezese.php?mac="+mac)
 	try:
 		r = retry_db().get(url,)
 		pontszam = str(r.content.decode("utf-8"))
@@ -426,7 +427,7 @@ def convert_str2int(a):
 
 def legjobb_matrix():
 	try:
-		url = ("http://mforrai.mooo.com:1213/szuret/legjobb_matrix.php?mac="+mac)
+		url = (host_address+"legjobb_matrix.php?mac="+mac)
 		r = retry_db().get(url,)
 		matrix = str(r.content.decode("utf-8")).replace("vesszo","'")
 		matrix = matrix.replace("[","")
@@ -1911,7 +1912,7 @@ def retry_db(
 ######################
 def is_ready(game, whoisready):
 	# host, connect
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_query_ready.php?game="+str(game)+"&case="+str(whoisready))
+	url = (host_address+"multi_query_ready.php?game="+str(game)+"&case="+str(whoisready))
 	try:
 		r = retry_db().get(url,)
 		is_ready = str(r.content.decode("utf-8"))
@@ -1924,7 +1925,7 @@ def is_ready(game, whoisready):
 
 ##################################################+
 def query_birtokok(game):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_query_birtokok.php?game="+game)
+	url = (host_address+"multi_query_birtokok.php?game="+game)
 	try:
 		r = retry_db().get(url,)
 		birtokok = str(r.content.decode("utf-8"))
@@ -1937,7 +1938,7 @@ def query_birtokok(game):
 ######################
 
 def query_aktualis(game,case):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_query_aktualis.php?game="+game+"&case="+case)
+	url = (host_address+"multi_query_aktualis.php?game="+game+"&case="+case)
 	try:
 		r = retry_db().get(url,)
 		aktualis = str(r.content.decode("utf-8"))
@@ -1948,7 +1949,7 @@ def query_aktualis(game,case):
 		pass
 ######################
 def upload_aktualis_birtok (birtok, kor, game):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_upload_birtok.php?game="+str(game)+"&aktualis_birtok="+str(birtok)+"&hanyadik_birtok="+str(kor))
+	url = (host_address+"multi_upload_birtok.php?game="+str(game)+"&aktualis_birtok="+str(birtok)+"&hanyadik_birtok="+str(kor))
 
 	try:
 		r = retry_db().get(url,)
@@ -1962,7 +1963,7 @@ def upload_aktualis_birtok (birtok, kor, game):
 
 ######################
 def upload_next_birtok (game, kov_birtok_hanyadik, kov_birtok):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_upload_next_birtok.php?game="+str(game)+"&kov_birtok_sorszama="+str(kov_birtok_hanyadik)+"&kov_birtok="+str(kov_birtok))
+	url = (host_address+"multi_upload_next_birtok.php?game="+str(game)+"&kov_birtok_sorszama="+str(kov_birtok_hanyadik)+"&kov_birtok="+str(kov_birtok))
 
 	try:
 		r = retry_db().get(url,)
@@ -1976,7 +1977,7 @@ def upload_next_birtok (game, kov_birtok_hanyadik, kov_birtok):
 
 ######################
 def upload_birtokok (game,birtokok):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_upload_birtokok.php?game="+str(game)+"&birtokok="+str(birtokok))
+	url = (host_address+"multi_upload_birtokok.php?game="+str(game)+"&birtokok="+str(birtokok))
 
 	try:
 		r = retry_db().get(url,)
@@ -1988,7 +1989,7 @@ def upload_birtokok (game,birtokok):
 
 ######################
 def upload_aktualis_kartya(kartya, hanyadik, game):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_upload_kartya.php?game="+str(game)+"&aktualis_kartya="+str(kartya)+"&hanyadik_kartya="+str(hanyadik))
+	url = (host_address+"multi_upload_kartya.php?game="+str(game)+"&aktualis_kartya="+str(kartya)+"&hanyadik_kartya="+str(hanyadik))
 	try:
 		r = retry_db().get(url,)
 	except:
@@ -1996,7 +1997,7 @@ def upload_aktualis_kartya(kartya, hanyadik, game):
 
 ######################
 def increase_aktualis_kartya(hanyadik, game):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_add_1_to_aktualis_kartya.php?game="+str(game)+"&hanyadik_kartya="+str(hanyadik))
+	url = (host_address+"multi_add_1_to_aktualis_kartya.php?game="+str(game)+"&hanyadik_kartya="+str(hanyadik))
 	try:
 		r = retry_db().get(url,)
 	except Exception as x:
@@ -2008,7 +2009,7 @@ def increase_aktualis_kartya(hanyadik, game):
 ######################
 def player_status(game, who):
 	# hostready, connectready, hostunready, connectunready
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_update_ready.php?game="+str(game)+"&case="+str(who))
+	url = (host_address+"multi_update_ready.php?game="+str(game)+"&case="+str(who))
 	try:
 		r = retry_db().get(url,)
 		player_status = str(r.content.decode("utf-8"))
@@ -2020,7 +2021,7 @@ def player_status(game, who):
 
 ######################
 def multi_results(game, mac):
-	url = ("http://mforrai.mooo.com:1213/szuret/multi_query_results.php?game="+str(game)+"&mac="+str(mac))
+	url = (host_address+"multi_query_results.php?game="+str(game)+"&mac="+str(mac))
 	try:
 		r = retry_db().get(url,)
 		opponent_result = str(r.content.decode("utf-8"))
@@ -2032,7 +2033,7 @@ def multi_results(game, mac):
 ######################
 def choose_free_game():
 	# hostready, connectready, hostunready, connectunready
-	url = ("http://mforrai.mooo.com:1213/szuret/query_free_host.php")
+	url = (host_address+"query_free_host.php")
 	try:
 		r = retry_db().get(url,)
 		game = str(r.content.decode("utf-8"))
@@ -2079,7 +2080,7 @@ def multi():
 		hosted_game = secrets.token_hex(25)
 		game = hosted_game
 		iamhost = 1
-		url = ("http://mforrai.mooo.com:1213/szuret/multi_host_game.php?hosted_game="+hosted_game)
+		url = (host_address+"multi_host_game.php?hosted_game="+hosted_game)
 		try:
 			r = retry_db().get(url,)
 		except:
@@ -2092,7 +2093,7 @@ def multi():
 			time.sleep(1)
 			wait_s += 1
 			game = str(choose_free_game())
-			if wait_s == ydim-27:
+			if wait_s == 10:
 				print()
 				print('Sajnos nincs elérhető játékos...')
 				time.sleep(5)
@@ -2103,7 +2104,7 @@ def multi():
 				time.sleep(1)
 		game = str(choose_free_game())
 		iamhost = 0
-		url = ("http://mforrai.mooo.com:1213/szuret/multi_connect_game.php?game="+game)
+		url = (host_address+"multi_connect_game.php?game="+game)
 		try:
 			r = retry_db().get(url,)
 		except:
@@ -2153,7 +2154,7 @@ def multi():
 				print('Várakozás a másik játékosra' + wait_s*'.'+'\r', end='')
 				time.sleep(1)
 				wait_s += 1
-				if wait_s == ydim-27:
+				if wait_s == 10:
 					print()
 					print('Sajnos nincs elérhető játékos...')
 					time.sleep(5)
