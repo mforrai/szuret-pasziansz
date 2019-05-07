@@ -1043,10 +1043,12 @@ def cim():
 
 def multi_choose():
 
-	teljessorszoveggel('ures','1. Új játék indítása','kozep')
+	teljessorszoveggel('ures','1. Publikus játék indítása','kozep')
 	teljessorszoveggel('ures','2. Csatlakozás...','kozep')
 	teljessor('ures',3)
-
+	teljessorszoveggel('ures','3. Privát játék indítása','kozep')
+	teljessorszoveggel('ures','4. Csatlakozás...','kozep')
+	teljessor('ures',3)
 
 def help():
 	kepernyo_torles()
@@ -2072,6 +2074,12 @@ def multi():
 		if ch in [50]:	# MULTIPLAYER
 			valasztas = 'connect'
 			break
+		if ch in [51]:	# MULTIPLAYER
+			valasztas = 'host_private'
+			break
+		if ch in [52]:	# MULTIPLAYER
+			valasztas = 'connect_private'
+			break
 		else:
 			pass
 
@@ -2093,10 +2101,10 @@ def multi():
 			time.sleep(1)
 			wait_s += 1
 			game = str(choose_free_game())
-			if wait_s == 10:
+			if wait_s == 30:
 				print()
 				print('Sajnos nincs elérhető játékos...')
-				time.sleep(5)
+				time.sleep(2)
 				intro()
 			if game != '0':
 				break
@@ -2110,6 +2118,32 @@ def multi():
 		except:
 			pass
 
+	if valasztas == 'host_private':
+	#	hosted_game = str(random.randint(1,9999))
+		hosted_game = secrets.token_hex(3)
+		game = hosted_game
+		iamhost = 1
+		url = (host_address+"multi_host_game.php?hosted_game="+hosted_game)
+		try:
+			r = retry_db().get(url,)
+		except:
+			pass
+
+	if valasztas == 'connect_private':
+		game = input('Játék azonosítója:')
+		iamhost = 0
+		url = (host_address+"multi_connect_game.php?game="+game)
+		try:
+			r = retry_db().get(url,)
+			valasz = str(r.content.decode("utf-8"))
+			if valasz == '!!!':
+				pass
+				intro()
+			else:
+				pass
+		except:
+			pass
+			intro()
 ################################################################################################################
 	birtokok = ['A','B','C','D','E','F']
 	shuffle(birtokok)
@@ -2154,10 +2188,10 @@ def multi():
 				print('Várakozás a másik játékosra' + wait_s*'.'+'\r', end='')
 				time.sleep(1)
 				wait_s += 1
-				if wait_s == 10:
+				if wait_s == 30:
 					print()
 					print('Sajnos nincs elérhető játékos...')
-					time.sleep(5)
+					time.sleep(2)
 					intro()
 	if iamhost == 0:
 		pass
@@ -2600,8 +2634,18 @@ def multi():
 		print(txt['hit_enter'][nyelv])
 		input('')
 	kepernyo_torles()
+	sajatpont = int(grand_total)
+	ellenfelpont = int(multi_results(game,mac))
 	print('Saját pontszám: ' + str(grand_total))
 	print('Ellenfél pontszáma: ' + str(multi_results(game,mac)))
+	teljessor('ures',5)
+	if sajatpont > ellenfelpont:
+		teljessorszoveggel('dupla','Gratulálunk! Nyertél.','kozep')
+	elif sajatpont < ellenfelpont:
+		teljessorszoveggel('dupla','Sajnáljuk! Vesztettél.','kozep')
+	else:
+		teljessorszoveggel('dupla','Döntetlen.','kozep')
+	teljessor('ures',2)
 	print(txt['hit_enter'][nyelv])
 	input('')
 	intro()
