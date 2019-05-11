@@ -2212,6 +2212,7 @@ def multi():
 
 		if iamhost == 0:
 			while 1:
+				print('Várakozás a másik játékosra...',)
 				if int(is_ready(game,'mehet2')) == 0:
 					break
 				else:
@@ -2243,7 +2244,6 @@ def multi():
 						else:
 							time.sleep(1)
 
-					print(kor)
 					if int(query_aktualis(game,'birtok_hanyadik')) > int(kor):
 						kor=int(query_aktualis(game, 'birtok_hanyadik'))
 						birtok = query_aktualis(game, 'birtok')
@@ -2291,8 +2291,9 @@ def multi():
 				player_status(game,'nem_mehet2')
 				while 1:	#várakozás a másik játékosra
 					print('Várakozás a másik játékosra...',)
+					player_status(game,'hostready')		#lehet, hogy TÖRÖLNI KELL
 					if int(is_ready(game,'connect')) == 1:
-						player_status(game,'connectunready')
+						player_status(game,'connectunready')      #ezt lehet, hogy vissza kell állítani, mert etőtl nem fog működni
 						break
 					else:
 						time.sleep(1)
@@ -2308,18 +2309,26 @@ def multi():
 			kepernyo_torles()
 			eredmeny(kor)
 			print(str(kor) + '. ' + txt['birtok'][nyelv] + ': ' + birtok)
+			print(game)
 			rajz(Matrix,oszlop,sor)
 ################################################################################################################
 			if iamhost == 1:
 				kihuzott_kartya = deck.pop()
 				hanyadik_kihuzott_kartya += 1
 				upload_aktualis_kartya(kartya2string(kihuzott_kartya),hanyadik_kihuzott_kartya,game) # feltölti, hogy mi a következő kártya, és hogy hányadik
+				while 1:
+					if int(is_ready(game,'connect')) == 0:
+						break
+					else:
+						time.sleep(1)
 			if iamhost == 0:
 				while 1:
-					if int(query_aktualis(game,'kartya_hanyadik')) > utolso_kartya_sorszama:
+					last_sorszam = int(query_aktualis(game,'kartya_hanyadik'))
+					if last_sorszam > utolso_kartya_sorszama:
 						kihuzott_kartya = query_aktualis(game,'kartya')
 						kihuzott_kartya = string2kartya(kihuzott_kartya)
-						utolso_kartya_sorszama = int(query_aktualis(game,'kartya_hanyadik'))
+						utolso_kartya_sorszama = last_sorszam
+						player_status(game,'connectunready')
 						break
 					else:
 						time.sleep(1)
@@ -2392,7 +2401,7 @@ def multi():
 						kukk[kor] = 1
 
 						if iamhost == 1:
-							player_status(game,'hostready')
+							player_status(game,'hostready')   #  lehet, hogy ezt vissza kell állítani
 						if iamhost == 0:
 							# várjon addig, amíg elkészül a host
 							player_status(game,'connectready')
@@ -2445,13 +2454,19 @@ def multi():
 									kihuzott_kartya = deck.pop()
 									hanyadik_kihuzott_kartya += 1
 									upload_aktualis_kartya(kartya2string(kihuzott_kartya),hanyadik_kihuzott_kartya,game) # feltölti, hogy mi a következő kártya, és hogy hányadik
-
+									while 1:
+										if int(is_ready(game,'connect')) == 0:
+											break
+										else:
+											time.sleep(1)
 								if iamhost == 0:
 									while 1:
-										if int(query_aktualis(game,'kartya_hanyadik')) > utolso_kartya_sorszama:
+										last_sorszam = int(query_aktualis(game,'kartya_hanyadik'))
+										if last_sorszam > utolso_kartya_sorszama:
 											kihuzott_kartya = query_aktualis(game,'kartya')
 											kihuzott_kartya = string2kartya(kihuzott_kartya)
-											utolso_kartya_sorszama = int(query_aktualis(game,'kartya_hanyadik'))
+											utolso_kartya_sorszama = last_sorszam
+											player_status(game,'connectunready')
 											break
 										else:
 											time.sleep(1)
@@ -2477,10 +2492,17 @@ def multi():
 								else:
 									laprajz(lap_rajz,5)
 
+								# if iamhost == 0:
+								# 	player_status(game,'connectready')
+								# if iamhost == 1:
+								# 	player_status(game,'hostready')
+
 								if iamhost == 0:
-									player_status(game,'connectready')
+									player_status(game,'connectunready')
 								if iamhost == 1:
-									player_status(game,'hostready')
+									player_status(game,'hostunready')
+
+
 
 								print(txt['kihuzott_sarga'][nyelv] + str(i))
 								print(txt['points_expected'][nyelv],aktualis)
@@ -2559,12 +2581,12 @@ def multi():
 		if iamhost == 0:
 			player_status(game,'mehet2')
 		if kor == 5:
-			teljessor('szimpla')
-			teljessorszoveggel('szimpla',txt['end'][nyelv],'kozep',1)
-			teljessorszoveggel('szimpla',txt['enter_results'][nyelv],'kozep')
-			teljessor('szimpla')
-			input('')
-			kepernyo_torles()
+			# teljessor('szimpla')
+			# teljessorszoveggel('szimpla',txt['end'][nyelv],'kozep',1)
+			# teljessorszoveggel('szimpla',txt['enter_results'][nyelv],'kozep')
+			# teljessor('szimpla')
+			# input('')
+			# kepernyo_torles()
 			if iamhost == 0:
 				break
 		else:
