@@ -185,7 +185,7 @@ txt = {
 
     'fomenu': {
         'hun': ' (H)elp                        (Ú)j játék                    (M)agamról ',
-        'eng': ' (H)elp         (N)ew game                                   (A)bout    '
+        'eng': ' (H)elp                        (N)ew game                    (A)bout    '
     },
 
     'fomenu_ios': {
