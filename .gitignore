@@ -3,3 +3,5 @@
 *.mid
 archive/
 szuret_backup.py
+.vscode/settings.json
+
