@@ -4,4 +4,7 @@
 archive/
 szuret_backup.py
 .vscode/settings.json
+setup.py
+build/
+dist/
 
