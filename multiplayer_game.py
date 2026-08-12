@@ -61,7 +61,6 @@ def wait_for(client, wanted, show_status=True):
 
 
 def wait_for_lobby(client, is_host):
-    players = []
     while True:
         msg = client.receive()
         if msg is None:
@@ -94,19 +93,21 @@ def card_ascii(ns, card):
         ns["laprajz"](drawing, 5)
 
 
-def place_or_peek(ns, client, matrix, farm, card, round_no, peek_used):
+def draw_turn(ns, matrix, farm, card, round_no, yellow_count):
     ns["kepernyo_torles"]()
     ns["eredmeny"](round_no)
     print(f"{round_no}. birtok: {farm}")
     ns["rajz"](matrix, ns["oszlop"], ns["sor"])
     card_ascii(ns, card)
-
-    yellow_text = "sárga" if card[4] == 99 else "szürke"
-    print(f"Aktuális útkártya: {yellow_text}")
+    print(f"Kihúzott sárga utak száma: {yellow_count}/4")
 
     x_farm, y_farm = ns["birtok_poziciok"][farm]
     current = ns["zold_lanc"](matrix, x_farm, y_farm) + ns["piros_lanc"](matrix, x_farm, y_farm)
     print(f"Várható pontok a körben: {current}")
+
+
+def place_or_peek(ns, client, matrix, farm, card, round_no, peek_used, yellow_count):
+    draw_turn(ns, matrix, farm, card, round_no, yellow_count)
 
     while True:
         answer = input("Hová helyezed az utat? (pl. C3, vagy BIRTOK): ").strip()
@@ -119,13 +120,28 @@ def place_or_peek(ns, client, matrix, farm, card, round_no, peek_used):
             if matrix[x][y][:4] != [0, 0, 0, 0]:
                 print("A megadott mezőn már van út!")
                 continue
+
             matrix[x][y][:4] = card[:4]
+
+            # Azonnal mutassuk a játékos saját lerakását, még a READY előtt.
+            ns["kepernyo_torles"]()
+            ns["eredmeny"](round_no)
+            print(f"{round_no}. birtok: {farm}")
+            ns["rajz"](matrix, ns["oszlop"], ns["sor"])
+            print(f"Kihúzott sárga utak száma: {yellow_count}/4")
+            x_farm, y_farm = ns["birtok_poziciok"][farm]
+            current = ns["zold_lanc"](matrix, x_farm, y_farm) + ns["piros_lanc"](matrix, x_farm, y_farm)
+            print(f"Várható pontok a körben: {current}")
+            print(f"Út elhelyezve: {answer.upper()}")
             return peek_used
 
         if answer.lower() in ("birtok", "farm"):
             if peek_used:
                 print("Ebben a körben már megnézted a következő birtokot.")
                 continue
+
+            # BIRTOK: az aktuális útkártyát nem rakjuk le; helyette egyszer
+            # privátban megnézzük a következő birtokot.
             client.peek()
             result = wait_for(client, "peek_result", show_status=False)
             print(f"Következő birtok: {result['farm']}")
@@ -185,27 +201,29 @@ def run_game(url, room, name, host):
             peek_used = False
             print(f"\n{round_no}. forduló – birtok: {farm}")
 
+            # Egy ciklus pontosan egy szerver által felfedett útkártyát kezel.
+            # A Worker számlálja a sárga lapokat, és a 4. sárga minden játékos
+            # READY-je után round_end eseménnyel zárja a fordulót.
             while True:
-                road = wait_for(client, ["road_revealed", "round_end"])
-                if road["type"] == "round_end":
+                message = wait_for(client, ["road_revealed", "round_end"])
+                if message["type"] == "round_end":
                     break
 
-                card = road["card"]
-                yellow_count = road.get("yellowCount", 0)
-                print(f"\nFelfedett lap #{road.get('cardIndex')} – sárga: {yellow_count}/4")
-                peek_used = place_or_peek(ns, client, matrix, farm, card, round_no, peek_used)
+                card = message["card"]
+                yellow_count = int(message.get("yellowCount", 0))
+                peek_used = place_or_peek(
+                    ns,
+                    client,
+                    matrix,
+                    farm,
+                    card,
+                    round_no,
+                    peek_used,
+                    yellow_count,
+                )
 
                 client.ready()
-                next_msg = wait_for(client, ["road_revealed", "round_end"])
-                if next_msg["type"] == "road_revealed":
-                    # We already consumed the next road, so resolve it here before looping.
-                    card = next_msg["card"]
-                    yellow_count = next_msg.get("yellowCount", 0)
-                    print(f"\nFelfedett lap #{next_msg.get('cardIndex')} – sárga: {yellow_count}/4")
-                    peek_used = place_or_peek(ns, client, matrix, farm, card, round_no, peek_used)
-                    client.ready()
-                    continue
-                break
+                print("Várakozás a többi játékosra...")
 
             score = calculate_round_score(ns, matrix, farm, round_no)
             print(f"\n{farm} birtok pontszáma: {score}")
