@@ -114,18 +114,28 @@ def card_ascii(ns, card):
         ns["laprajz"](drawing, 5)
 
 
-def place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, yellow_count):
+def render_turn_screen(ns, matrix, farm, card, round_no, yellow_count, status=None):
+    """Render the complete current-turn status screen."""
     ns["kepernyo_torles"]()
     ns["eredmeny"](round_no)
     print(f"{round_no}. birtok: {farm}")
     ns["rajz"](matrix, ns["oszlop"], ns["sor"])
     card_ascii(ns, card)
-
     print(f"Kihúzott sárga utak száma: {yellow_count}/4")
 
     x_farm, y_farm = ns["birtok_poziciok"][farm]
-    current = ns["zold_lanc"](matrix, x_farm, y_farm) + ns["piros_lanc"](matrix, x_farm, y_farm)
+    current = (
+        ns["zold_lanc"](matrix, x_farm, y_farm)
+        + ns["piros_lanc"](matrix, x_farm, y_farm)
+    )
     print(f"Várható pontok a körben: {current}")
+
+    if status:
+        print(status)
+
+
+def place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, yellow_count):
+    render_turn_screen(ns, matrix, farm, card, round_no, yellow_count)
 
     while True:
         answer = input("Hová helyezed az utat? (pl. C3, vagy BIRTOK): ").strip()
@@ -138,19 +148,24 @@ def place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, 
             if matrix[x][y][:4] != [0, 0, 0, 0]:
                 print("A megadott mezőn már van út!")
                 continue
-            matrix[x][y][:4] = card[:4]
 
-            ns["kepernyo_torles"]()
-            ns["eredmeny"](round_no)
-            print(f"{round_no}. birtok: {farm}")
-            ns["rajz"](matrix, ns["oszlop"], ns["sor"])
-            print(f"Kihúzott sárga utak száma: {yellow_count}/4")
+            matrix[x][y][:4] = card[:4]
+            render_turn_screen(
+                ns,
+                matrix,
+                farm,
+                card,
+                round_no,
+                yellow_count,
+                status="Út lerakva. Várakozás a többi játékosra...",
+            )
             return peek_used
 
         if answer.lower() in ("birtok", "farm"):
             if peek_used:
                 print("Ebben a körben már megnézted a következő birtokot.")
                 continue
+
             client.peek()
             result = wait_for(client, "peek_result", pending, show_status=False)
             ns["kepernyo_torles"]()
@@ -158,8 +173,17 @@ def place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, 
             print(f"{round_no}. birtok: {farm}")
             print("A BIRTOK akció miatt az aktuális útkártyát nem rakod le.")
             print(f"Következő birtok: {result['farm']}")
-            # birtokrajz() itself waits for ENTER and clears the screen.
             ns["birtokrajz"](result["farm"])
+
+            render_turn_screen(
+                ns,
+                matrix,
+                farm,
+                card,
+                round_no,
+                yellow_count,
+                status="BIRTOK akció: az aktuális út eldobva. Várakozás a többi játékosra...",
+            )
             return True
 
         print("Érvénytelen parancs.")
