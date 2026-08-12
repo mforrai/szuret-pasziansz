@@ -8,6 +8,7 @@ executing its intro() entry point.
 
 import argparse
 import copy
+from collections import deque
 from pathlib import Path
 
 from multiplayer_client import MultiplayerClient
@@ -35,12 +36,21 @@ def load_legacy_game():
     return namespace
 
 
-def wait_for(client, wanted, show_status=True):
-    """Receive messages until one of the requested message types arrives."""
+def wait_for(client, wanted, pending, show_status=True):
+    """Receive messages until one of the requested message types arrives.
+
+    Messages not needed by the current state are buffered instead of discarded.
+    """
     if isinstance(wanted, str):
         wanted = {wanted}
     else:
         wanted = set(wanted)
+
+    # First consume a previously buffered event if it matches.
+    for index, message in enumerate(list(pending)):
+        if message.get("type") in wanted:
+            del pending[index]
+            return message
 
     while True:
         message = client.receive()
@@ -55,19 +65,18 @@ def wait_for(client, wanted, show_status=True):
             ready = ", ".join(message.get("ready", [])) or "senki"
             total = message.get("total", "?")
             print(f"Kész játékosok: {ready} / összesen {total}")
+            continue
 
         if msg_type in wanted:
             return message
 
+        pending.append(message)
 
-def wait_for_lobby(client, is_host):
+
+def wait_for_lobby(client, is_host, pending):
     players = []
     while True:
-        msg = client.receive()
-        if msg is None:
-            raise ConnectionError("A kapcsolat megszakadt.")
-        if msg.get("type") == "error":
-            raise RuntimeError(msg.get("message", "Ismeretlen szerverhiba"))
+        msg = wait_for(client, ["lobby", "game_started"], pending, show_status=False)
         if msg.get("type") == "lobby":
             players = msg.get("players", [])
             print("\nLobby:")
@@ -77,8 +86,8 @@ def wait_for_lobby(client, is_host):
             if is_host and len(players) >= 2:
                 input("\nLegalább két játékos csatlakozott. ENTER: játék indítása...")
                 client.start_game()
-                return
-        if not is_host and msg.get("type") == "game_started":
+                return None
+        elif not is_host:
             return msg
 
 
@@ -104,7 +113,7 @@ def card_ascii(ns, card):
         ns["laprajz"](drawing, 5)
 
 
-def place_or_peek(ns, client, matrix, farm, card, round_no, peek_used, yellow_count):
+def place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, yellow_count):
     ns["kepernyo_torles"]()
     ns["eredmeny"](round_no)
     print(f"{round_no}. birtok: {farm}")
@@ -130,7 +139,6 @@ def place_or_peek(ns, client, matrix, farm, card, round_no, peek_used, yellow_co
                 continue
             matrix[x][y][:4] = card[:4]
 
-            # Azonnal mutassuk meg a frissen lerakott utat.
             ns["kepernyo_torles"]()
             ns["eredmeny"](round_no)
             print(f"{round_no}. birtok: {farm}")
@@ -143,7 +151,7 @@ def place_or_peek(ns, client, matrix, farm, card, round_no, peek_used, yellow_co
                 print("Ebben a körben már megnézted a következő birtokot.")
                 continue
             client.peek()
-            result = wait_for(client, "peek_result", show_status=False)
+            result = wait_for(client, "peek_result", pending, show_status=False)
             ns["kepernyo_torles"]()
             ns["eredmeny"](round_no)
             print(f"{round_no}. birtok: {farm}")
@@ -188,15 +196,16 @@ def run_game(url, room, name, host):
     ns = load_legacy_game()
     matrix = ns["alaphelyzet"](ns["sor"], ns["oszlop"])
     client = MultiplayerClient(url, room, name, host=host)
+    pending = deque()
 
     try:
-        connected = wait_for(client, "connected", show_status=False)
+        connected = wait_for(client, "connected", pending, show_status=False)
         actual_host = bool(connected.get("host"))
         print(f"Csatlakozva: {room.upper()} / {name}{' (host)' if actual_host else ''}")
 
-        start_msg = wait_for_lobby(client, actual_host)
+        start_msg = wait_for_lobby(client, actual_host, pending)
         if start_msg is None:
-            start_msg = wait_for(client, "game_started", show_status=False)
+            start_msg = wait_for(client, "game_started", pending, show_status=False)
 
         round_no = int(start_msg["round"])
         farm = start_msg["farm"]
@@ -207,7 +216,7 @@ def run_game(url, room, name, host):
             peek_used = False
 
             while True:
-                road = wait_for(client, ["road_revealed", "round_end"])
+                road = wait_for(client, ["road_revealed", "round_end"], pending)
                 if road["type"] == "round_end":
                     break
 
@@ -216,6 +225,7 @@ def run_game(url, room, name, host):
                 peek_used = place_or_peek(
                     ns,
                     client,
+                    pending,
                     matrix,
                     farm,
                     card,
@@ -230,7 +240,7 @@ def run_game(url, room, name, host):
             print(f"\n{farm} birtok pontszáma: {score}")
             client.send_round_score(score)
 
-            results = wait_for(client, ["round_results", "request_final_score"])
+            results = wait_for(client, ["round_results", "request_final_score"], pending)
             if results["type"] == "round_results":
                 print("Forduló eredményei:")
                 for item in results.get("scores", []):
@@ -238,7 +248,7 @@ def run_game(url, room, name, host):
 
             if round_no >= 5:
                 if results["type"] != "request_final_score":
-                    wait_for(client, "request_final_score")
+                    wait_for(client, "request_final_score", pending)
                 final = calculate_final_score(ns, matrix)
                 print("\nSaját végeredmény:")
                 print(f" Birtokok: {final['farm_total']}")
@@ -248,7 +258,7 @@ def run_game(url, room, name, host):
                 print(f" ÖSSZESEN: {final['total']}")
                 client.send_final_score(final["total"])
 
-                finished = wait_for(client, "game_finished")
+                finished = wait_for(client, "game_finished", pending)
                 print("\nVÉGEREDMÉNY")
                 for index, item in enumerate(finished.get("ranking", []), start=1):
                     print(f" {index}. {item['name']}: {item['score']} pont")
@@ -256,7 +266,7 @@ def run_game(url, room, name, host):
                 print(f"Győztes: {winners}")
                 return
 
-            next_round = wait_for(client, "farm_revealed")
+            next_round = wait_for(client, "farm_revealed", pending)
             round_no = int(next_round["round"])
             farm = next_round["farm"]
             show_farm_splash(ns, round_no, farm)
