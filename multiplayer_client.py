@@ -9,7 +9,7 @@ import websocket
 
 
 class MultiplayerClient:
-    def __init__(self, base_url, room_code, player_name, host=False, timeout=30):
+    def __init__(self, base_url, room_code, player_name, host=False, connect_timeout=30):
         base_url = base_url.rstrip('/')
         if base_url.startswith('https://'):
             base_url = 'wss://' + base_url[len('https://'):]
@@ -20,7 +20,12 @@ class MultiplayerClient:
             f"{base_url}/room/{quote(room_code.upper())}"
             f"?name={quote(player_name)}&host={'1' if host else '0'}"
         )
-        self.ws = websocket.create_connection(self.url, timeout=timeout)
+
+        # The timeout is only used while establishing the connection. Once the
+        # WebSocket is open, keep it blocking indefinitely so normal player
+        # thinking time does not close an otherwise healthy multiplayer room.
+        self.ws = websocket.create_connection(self.url, timeout=connect_timeout)
+        self.ws.settimeout(None)
 
     def close(self):
         self.ws.close()
