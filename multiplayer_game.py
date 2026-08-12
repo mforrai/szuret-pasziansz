@@ -46,7 +46,6 @@ def wait_for(client, wanted, pending, show_status=True):
     else:
         wanted = set(wanted)
 
-    # First consume a previously buffered event if it matches.
     for index, message in enumerate(list(pending)):
         if message.get("type") in wanted:
             del pending[index]
@@ -97,7 +96,8 @@ def show_farm_splash(ns, round_no, farm):
     ns["eredmeny"](round_no)
     print(f"{round_no}. birtok: {farm}")
     ns["birtokrajz"](farm)
-    input("ENTER: kör indítása...")
+    print("ENTER: kör indítása...")
+    input()
     ns["kepernyo_torles"]()
 
 
