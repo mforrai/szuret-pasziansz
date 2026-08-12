@@ -57,7 +57,7 @@ def oprendszer():
 
 
 def kepernyo_torles():
-    if oprendszer() == 'nt':
+    if oprendszer() == 'win':
         os.system('cls')
     if oprendszer() == 'ios':
         import console
@@ -1034,9 +1034,10 @@ A játék során dűlőutakat (útvonalakat) kell berajzolni a térképre,
 miközben a szőlőket szőlőbirtokokkal és a várkastélyokkal kell
 összekötni.
 Minden forduló végén össze kell számolni az adott birtok után járó
-pontokat. Pontot akkor kap egy játékos, ha több pontot érnek a
-dűlőútépítéssel elért új szőlők, mint amennyit az előző birtok
-után kapott.
+pontokat. Pontot akkor kap egy játékos, ha az adott birtokhoz kapcsolódó
+összes szőlő száma nagyobb, mint az előző birtokért kapott pontszám.
+Ha egy birtok 0 pontot ér, a következő birtoknak már csak 0-nál kell
+több pontot érnie.
 Minden olyan birtok után, amelyért a játékosnak nem járt pont, a
 játék végén 5 pontot le kell vonni.
 
@@ -1076,12 +1077,14 @@ Ezt követően felfedésre kerül egy útvonal az alábbiak közül:
 ├────┘    ││    └────┤│    ┌────┤├────┐    │├─────────┤│    │    │
 │         ││         ││    │    ││    │    ││         ││    │    │
 └─────────┘└─────────┘└────┴────┘└────┴────┘└─────────┘└────┴────┘
-Az útvonal színe lehet fehér vagy sárga. Minden lehetséges elemből
-3 db fehér és 4 db sárga áll rendelkezésre.
+Az útvonal színe lehet fehér vagy sárga. Az első négy úttípusból
+3 db fehér és 4 db sárga, a két egyenes úttípusból pedig
+4 db fehér és 3 db sárga áll rendelkezésre.
 
 A játékos két lehetőség közül választhat:
     1. Berajzolja az adott útvonalat a játékmezőre (térképre)
        Ehhez meg kell adni a térkép egy koordinátáját, pl. C3
+       Az útvonalat a felfedett állásban kell elhelyezni, nem forgatható.
 
     2. Megnézi, hogy melyik birtok lesz a következő.
        Ehhez a BIRTOK parancsot kell megadni.
@@ -1104,21 +1107,23 @@ A játékos két lehetőség közül választhat:
  Szüret: Útvonalrajzolás és pontozás                                3/5
 ────────────────────────────────────────────────────────────────────────
 
-A játékosnak a térkép egy szabadon választott úres mezőjébe kell
+A játékosnak a térkép egy szabadon választott üres mezőjébe kell
 elhelyeznie az útvonalat.
-Szabad zsákutcákat és a birtokok határához érő útvonalakat
-képezni.
-Az újonnan elhelyezett útvonalaknak nem kell amár meglévőket
+Szabad zsákutcákat képezni, és az útvonal kifuthat a térkép szélén.
+Az újonnan elhelyezett útvonalaknak nem kell a már meglévőket
 folytatniuk.
 
 
 Folyamatosan látható a képernyőn, hogy az adott fordulóban hány
 sárga útvonal került felfedésre.
 Ha az adott fordulóban a 4. sárga útvonal is felfedésre került,
-vége a fordulónak, és megtörténik a pontozás.
+a hozzá tartozó akciót még végre kell hajtani. Ezután vége a
+fordulónak, és megtörténik a pontozás.
 
-Minden fehér (zöld) és piros szőlőért, amelyhez bármilyen irányban út
-vezet az adott forduló birtokáról, 1 pont jár.
+Minden fehér (zöld) és piros szőlőért 1 pont jár, amely ugyanahhoz az
+összefüggő úthálózathoz kapcsolódik, mint az adott forduló birtoka.
+A szőlő, birtok vagy kastély csak akkor kapcsolódik az úthálózathoz,
+ha a saját mezőjén is út halad keresztül.
 
 
 
@@ -1700,6 +1705,7 @@ def jatek():
             y = birtok_poziciok[birtok][1]
             aktualis = zold_lanc(Matrix, x, y) + piros_lanc(Matrix, x, y)
             print(txt['points_expected'][nyelv], aktualis)
+            kartya_elhelyezve = False
             while True:
                 valasz = input(txt['where_road'][nyelv])
                 if check(valasz) == 1:
@@ -1709,71 +1715,47 @@ def jatek():
                     x = x_szam-1
                     if Matrix[x][y][:4] == [0, 0, 0, 0]:
                         kepernyo_torles()
+                        kartya_elhelyezve = True
                         break
                     else:
                         print(txt['field_used'][nyelv])
                 else:
                     # KÖVETKEZŐ BIRTOK MEGTEKINTÉSE
-                    if valasz in ['BIRTOK', 'birtok', 'FARM', 'farm'] and kukk[kor] == 0 and i < 5 and kor < 5:
-                        kihuzott_birtokok[kor+1] = birtokok.pop()
+                    if valasz in ['BIRTOK', 'birtok', 'FARM', 'farm'] and kukk[kor] == 0:
+                        if kor < 5:
+                            kihuzott_birtokok[kor+1] = birtokok.pop()
+                            kovetkezo_birtok = kihuzott_birtokok[kor+1]
+                        else:
+                            # Az 5. körben is szabályos a BIRTOK akció.
+                            # A hatodik birtokot csak megmutatjuk; pontozni már nem fogjuk.
+                            kovetkezo_birtok = birtokok[-1]
+
                         kepernyo_torles()
                         eredmeny(kor)
                         print(str(kor) + '. ' +
                               txt['birtok'][nyelv] + ': ' + birtok)
-                        birtokrajz(kihuzott_birtokok[kor+1])
+                        birtokrajz(kovetkezo_birtok)
                         kukk[kor] = 1
 
-                        # VISSZA AZ ADOTT KÖRBE
-                        if i < 4:
-                            eredmeny(kor)
-                            print(str(kor) + '. ' +
-                                  txt['birtok'][nyelv] + ': ' + birtok)
-                            rajz(Matrix, oszlop, sor)
-                            if i < 4:
-                                kihuzott_kartya = deck.pop()
-                                lap_rajz = copy.deepcopy(kihuzott_kartya)
-                                if lap_rajz[:4] == [0, 0, 0, 0]:
-                                    lap_rajz = d['[0,0,0,0]']
-                                if lap_rajz[:4] == [1, 1, 0, 0]:
-                                    lap_rajz = d['[1,1,0,0]']
-                                if lap_rajz[:4] == [1, 0, 1, 0]:
-                                    lap_rajz = d['[1,0,1,0]']
-                                if lap_rajz[:4] == [1, 0, 0, 1]:
-                                    lap_rajz = d['[1,0,0,1]']
-                                if lap_rajz[:4] == [0, 1, 1, 0]:
-                                    lap_rajz = d['[0,1,1,0]']
-                                if lap_rajz[:4] == [0, 1, 0, 1]:
-                                    lap_rajz = d['[0,1,0,1]']
-                                if lap_rajz[:4] == [0, 0, 1, 1]:
-                                    lap_rajz = d['[0,0,1,1]']
-                                if kihuzott_kartya[4] == 99:
-                                    i += 1
-                                    laprajz_sarga(lap_rajz, 5)
-                                else:
-                                    laprajz(lap_rajz, 5)
-                                print(txt['kihuzott_sarga'][nyelv] + str(i))
-                                print(txt['points_expected'][nyelv], aktualis)
-                            else:
-                                pass
-                        else:
-                            break
+                        # A BIRTOK akció kiváltja az aktuális út lerakását.
+                        # A következő lapot a külső játékhurok húzza.
+                        break
                     else:
                         if kukk[kor] == 1 and valasz in ['BIRTOK', 'birtok', 'FARM', 'farm']:
                             print(txt['kukk_happened'][nyelv])
                         else:
-                            if kor == 5 and valasz in ['BIRTOK', 'birtok', 'FARM', 'farm']:
-                                print(txt['last_round'][nyelv])
+                            if valasz in ['EXIT', 'exit']:
+                                intro()
                             else:
-                                if valasz in ['EXIT', 'exit']:
-                                    intro()
-                                else:
-                                    print(txt['not_valid_command'][nyelv])
+                                print(txt['not_valid_command'][nyelv])
 
             # ÚT ELHELYEZÉSE A MEGADOTT KOORDINÁTÁKRA
-            Matrix[x][y][:4] = kihuzott_kartya[:4]
-            eredmeny(kor)
-            print(str(kor) + '. ' + txt['birtok'][nyelv] + ': ' + birtok)
-            rajz(Matrix, oszlop, sor)
+            # BIRTOK akció esetén az aktuális útkártya eldobásra kerül.
+            if kartya_elhelyezve:
+                Matrix[x][y][:4] = kihuzott_kartya[:4]
+                eredmeny(kor)
+                print(str(kor) + '. ' + txt['birtok'][nyelv] + ': ' + birtok)
+                rajz(Matrix, oszlop, sor)
 
         # EREDMÉNY MEGHATÁROZÁSA
         x = birtok_poziciok[birtok][0]
