@@ -1,6 +1,6 @@
-# Szüret
+# Szüret-ASCII
 
-A **Szüret** című társasjáték ASCII-alapú Python-verziója.
+A **Szüret** (Kiadó: Granna) című társasjáték ASCII-alapú Python-verziója.
 
 ## Verziók
 
