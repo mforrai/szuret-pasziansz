@@ -291,6 +291,7 @@ def run_game(url, room, name, host):
                 print(f"Győztes: {winners}")
                 return
 
+            input("\nENTER: következő birtok felfedése...")
             next_round = wait_for(client, "farm_revealed", pending)
             round_no = int(next_round["round"])
             farm = next_round["farm"]
