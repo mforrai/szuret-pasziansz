@@ -51,7 +51,6 @@ python -m pip install -r requirements.txt
 
 A `requirements.txt` jelenleg ezeket a külső csomagokat telepíti:
 
-- `PyMySQL`
 - `requests`
 - `websocket-client`
 
