@@ -2,6 +2,7 @@
 """Minimal synchronous WebSocket client for the Cloudflare multiplayer coordinator."""
 
 import json
+import threading
 from urllib.parse import quote
 
 import websocket
@@ -51,6 +52,33 @@ class MultiplayerClient:
         self.send('final_score', score=int(score))
 
 
+def print_help():
+    print(
+        "Commands:\n"
+        "  start              host starts the game\n"
+        "  ready              mark current road card as resolved\n"
+        "  peek               use the BIRTOK action\n"
+        "  score <n>          submit round score\n"
+        "  final <n>          submit final score\n"
+        "  help               show this help\n"
+        "  quit               disconnect\n"
+    )
+
+
+def receiver_loop(client, stop_event):
+    while not stop_event.is_set():
+        try:
+            message = client.receive()
+            if message is None:
+                break
+            print("\n<<<", json.dumps(message, ensure_ascii=False, indent=2))
+            print("> ", end="", flush=True)
+        except Exception as exc:
+            if not stop_event.is_set():
+                print(f"\nConnection closed: {exc}")
+            break
+
+
 if __name__ == '__main__':
     import argparse
 
@@ -62,9 +90,36 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     client = MultiplayerClient(args.url, args.room, args.name, args.host)
-    print('Connected. Incoming messages:')
+    stop_event = threading.Event()
+    receiver = threading.Thread(target=receiver_loop, args=(client, stop_event), daemon=True)
+    receiver.start()
+
+    print(f"Connected to room {args.room.upper()} as {args.name}{' (host)' if args.host else ''}.")
+    print_help()
+
     try:
         while True:
-            print(json.dumps(client.receive(), ensure_ascii=False, indent=2))
-    except KeyboardInterrupt:
+            command = input('> ').strip()
+            if not command:
+                continue
+            if command == 'start':
+                client.start_game()
+            elif command == 'ready':
+                client.ready()
+            elif command == 'peek':
+                client.peek()
+            elif command.startswith('score '):
+                client.send_round_score(int(command.split(maxsplit=1)[1]))
+            elif command.startswith('final '):
+                client.send_final_score(int(command.split(maxsplit=1)[1]))
+            elif command == 'help':
+                print_help()
+            elif command in ('quit', 'exit'):
+                break
+            else:
+                print('Unknown command. Type help.')
+    except (KeyboardInterrupt, EOFError):
+        pass
+    finally:
+        stop_event.set()
         client.close()
