@@ -1,11 +1,33 @@
-
 .DS_Store
 *.mid
-archive/
-szuret_backup.py
-.vscode/settings.json
-setup.py
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+venv-szuret-pasziansz/
+.venv/
+
+# Build output
 build/
 dist/
-venv-szuret-pasziansz/
-__pycache__/
+
+# IDE / local settings
+.vscode/settings.json
+
+# Project-local / one-off helper files
+archive/
+szuret_backup.py
+apply_avenue_fixes.py
+setup.py
+
+# Cloudflare / Node
+cloudflare-worker/node_modules/
+cloudflare-worker/.wrangler/
+cloudflare-worker/worker-configuration.d.ts
+cloudflare-worker/.dev.vars
+cloudflare-worker/.env
+
+# Logs
+*.log
