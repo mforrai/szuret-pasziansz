@@ -21,9 +21,6 @@ class MultiplayerClient:
             f"?name={quote(player_name)}&host={'1' if host else '0'}"
         )
 
-        # The timeout is only used while establishing the connection. Once the
-        # WebSocket is open, keep it blocking indefinitely so normal player
-        # thinking time does not close an otherwise healthy multiplayer room.
         self.ws = websocket.create_connection(self.url, timeout=connect_timeout)
         self.ws.settimeout(None)
 
@@ -41,11 +38,30 @@ class MultiplayerClient:
             return None
         return json.loads(raw)
 
+    def receive_timeout(self, timeout):
+        """Receive one message, returning None on an idle timeout."""
+        self.ws.settimeout(timeout)
+        try:
+            raw = self.ws.recv()
+            if not raw:
+                return None
+            return json.loads(raw)
+        except websocket.WebSocketTimeoutException:
+            return None
+        finally:
+            self.ws.settimeout(None)
+
     def start_game(self):
         self.send('start_game')
 
-    def ready(self):
-        self.send('ready')
+    def ready(self, action='place', card_index=None):
+        payload = {'action': action}
+        if card_index is not None:
+            payload['cardIndex'] = int(card_index)
+        self.send('ready', **payload)
+
+    def undo(self, card_index):
+        self.send('undo', cardIndex=int(card_index))
 
     def peek(self):
         self.send('peek')
@@ -62,6 +78,7 @@ def print_help():
         "Commands:\n"
         "  start              host starts the game\n"
         "  ready              mark current road card as resolved\n"
+        "  undo <card>        undo a still-open placement\n"
         "  peek               use the BIRTOK action\n"
         "  score <n>          submit round score\n"
         "  final <n>          submit final score\n"
@@ -111,6 +128,8 @@ if __name__ == '__main__':
                 client.start_game()
             elif command == 'ready':
                 client.ready()
+            elif command.startswith('undo '):
+                client.undo(int(command.split(maxsplit=1)[1]))
             elif command == 'peek':
                 client.peek()
             elif command.startswith('score '):
