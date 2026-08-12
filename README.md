@@ -1,4 +1,11 @@
-# Szüret - pasziánsz
+# Szüret
 A Szüret című társasjáték ASCII-alapú verziója (Python)
 
-* Egyjátékos mód
+* v1.3
+  Egyjátékos mód
+
+* v1.35
+  Bugfix (ChatGPT code review)
+
+* v2.0
+  Multiplayer
