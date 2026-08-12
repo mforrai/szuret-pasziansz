@@ -9,7 +9,6 @@ import platform
 import sys
 import shutil
 import time
-import pymysql
 import requests
 import urllib.parse
 import random
