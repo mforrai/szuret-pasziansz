@@ -159,7 +159,14 @@ export class GameRoom extends DurableObject<Env> {
 
     switch (data.type) {
       case "start_game": {
-        if (!player.host || state.started) return;
+        if (state.started) {
+          this.send(ws, { type: "error", message: "Game already started." });
+          return;
+        }
+        if (!player.host) {
+          this.send(ws, { type: "error", message: "Only the host can start the game." });
+          return;
+        }
         const playerCount = Object.keys(state.players).length;
         if (playerCount < 2) {
           this.send(ws, { type: "error", message: "At least two players are required to start." });
