@@ -91,11 +91,7 @@ def wait_for_lobby(client, is_host, pending):
 
 
 def show_farm_splash(ns, round_no, farm):
-    """Show the newly active farm before the first road card of the round.
-
-    birtokrajz() already contains the ENTER prompt and clears the screen afterwards,
-    so no second multiplayer-side prompt is needed here.
-    """
+    """Show the newly active farm before the first road card of the round."""
     ns["kepernyo_torles"]()
     ns["eredmeny"](round_no)
     print(f"{round_no}. birtok: {farm}")
@@ -124,10 +120,7 @@ def render_turn_screen(ns, matrix, farm, card, round_no, yellow_count, status=No
     print(f"Kihúzott sárga utak száma: {yellow_count}/4")
 
     x_farm, y_farm = ns["birtok_poziciok"][farm]
-    current = (
-        ns["zold_lanc"](matrix, x_farm, y_farm)
-        + ns["piros_lanc"](matrix, x_farm, y_farm)
-    )
+    current = ns["zold_lanc"](matrix, x_farm, y_farm) + ns["piros_lanc"](matrix, x_farm, y_farm)
     print(f"Várható pontok a körben: {current}")
 
     if status:
@@ -206,15 +199,70 @@ def calculate_final_score(ns, matrix):
     farm_total = sum(ns["resultkor"][1:6])
     green_castle = ns["zold_lanc"](matrix, 0, 5)
     red_castle = ns["piros_lanc"](matrix, 6, 0)
-    zero_penalty = ns["resultkor"][1:6].count(0) * -5
+    zero_count = ns["resultkor"][1:6].count(0)
+    zero_penalty = zero_count * -5
     total = farm_total + green_castle + red_castle + zero_penalty
     return {
         "farm_total": farm_total,
         "green_castle": green_castle,
         "red_castle": red_castle,
+        "zero_count": zero_count,
         "zero_penalty": zero_penalty,
         "total": total,
     }
+
+
+def render_final_results(ns, matrix, final, ranking=None, winners=None, status=None):
+    """Render the legacy-style result screen, optionally with multiplayer ranking."""
+    ns["kepernyo_torles"]()
+    ns["rajz"](matrix, ns["oszlop"], ns["sor"])
+
+    nyelv = ns["nyelv"]
+    txt = ns["txt"]
+    pont = txt["pont"][nyelv]
+    birtok_label = txt["birtok"][nyelv]
+
+    ns["teljessorszoveggel"]("szimpla", txt["results"][nyelv], "kozep", 1)
+    ns["teljessor"]("dupla")
+
+    for i in range(1, 6):
+        farm = ns["kihuzott_birtokok"][i]
+        score = ns["resultkor"][i]
+        print(f"{farm} {birtok_label}:                       {str(score).zfill(2)}{pont}")
+
+    ns["teljessor"]("szimpla")
+    print(txt["every_birtok"][nyelv] + "               " + str(final["farm_total"]).zfill(3) + pont)
+    ns["teljessor"]("szimpla")
+    print(txt["green_castle"][nyelv] + "                 " + str(final["green_castle"]).zfill(2) + pont)
+    print(txt["red_castle"][nyelv] + "                " + str(final["red_castle"]).zfill(2) + pont)
+    ns["teljessor"]("szimpla")
+    print(
+        txt["zero_point_rounds"][nyelv]
+        + " ("
+        + str(final["zero_count"])
+        + txt["db"][nyelv]
+        + "):   "
+        + str(final["zero_penalty"]).zfill(2)
+        + pont
+    )
+    ns["teljessor"]("dupla")
+    assessment = ns["szoveges_ertekeles"](final["total"], nyelv)
+    print(txt["total"][nyelv] + "                    " + str(final["total"]).zfill(3) + pont + " - " + assessment)
+    ns["teljessor"]("dupla")
+
+    if ranking is not None:
+        ns["teljessorszoveggel"]("szimpla", "MULTIPLAYER RANGSOR", "kozep", 1)
+        ns["teljessor"]("szimpla")
+        for index, item in enumerate(ranking, start=1):
+            marker = "  <-- TE" if item.get("name") == ranking[0].get("viewer_name") else ""
+            print(f" {index}. {item['name']}: {item['score']} pont{marker}")
+        if winners:
+            ns["teljessor"]("szimpla")
+            print("Győztes: " + ", ".join(winners))
+        ns["teljessor"]("dupla")
+
+    if status:
+        print(status)
 
 
 def run_game(url, room, name, host):
@@ -247,18 +295,7 @@ def run_game(url, room, name, host):
 
                 card = road["card"]
                 yellow_count = road.get("yellowCount", 0)
-                peek_used = place_or_peek(
-                    ns,
-                    client,
-                    pending,
-                    matrix,
-                    farm,
-                    card,
-                    round_no,
-                    peek_used,
-                    yellow_count,
-                )
-
+                peek_used = place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, yellow_count)
                 client.ready()
 
             score = calculate_round_score(ns, matrix, farm, round_no)
@@ -274,21 +311,26 @@ def run_game(url, room, name, host):
             if round_no >= 5:
                 if results["type"] != "request_final_score":
                     wait_for(client, "request_final_score", pending)
+
                 final = calculate_final_score(ns, matrix)
-                print("\nSaját végeredmény:")
-                print(f" Birtokok: {final['farm_total']}")
-                print(f" Zöld kastély: {final['green_castle']}")
-                print(f" Piros kastély: {final['red_castle']}")
-                print(f" Nulla pontos körök: {final['zero_penalty']}")
-                print(f" ÖSSZESEN: {final['total']}")
                 client.send_final_score(final["total"])
+                render_final_results(
+                    ns,
+                    matrix,
+                    final,
+                    status="Várakozás a többi játékos végeredményére...",
+                )
 
                 finished = wait_for(client, "game_finished", pending)
-                print("\nVÉGEREDMÉNY")
-                for index, item in enumerate(finished.get("ranking", []), start=1):
-                    print(f" {index}. {item['name']}: {item['score']} pont")
-                winners = ", ".join(finished.get("winners", []))
-                print(f"Győztes: {winners}")
+                ranking = finished.get("ranking", [])
+                render_final_results(
+                    ns,
+                    matrix,
+                    final,
+                    ranking=ranking,
+                    winners=finished.get("winners", []),
+                )
+                input("\nENTER: kilépés...")
                 return
 
             input("\nENTER: következő birtok felfedése...")
