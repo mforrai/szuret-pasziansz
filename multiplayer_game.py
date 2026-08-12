@@ -8,6 +8,7 @@ executing its intro() entry point.
 
 import argparse
 import copy
+import sys
 from collections import deque
 from pathlib import Path
 
@@ -34,6 +35,15 @@ def load_legacy_game():
     namespace["kihuzott_birtokok"] = [None, None, None, None, None, None]
     namespace["resultkor"] = [None, None, None, None, None, None]
     return namespace
+
+
+def wait_enter(message):
+    """Wait for ENTER and erase the prompt line before the next screen is drawn."""
+    print(message, end="", flush=True)
+    input()
+    # Move back to the prompt line and erase it, then return to a clean line.
+    sys.stdout.write("\x1b[1A\r\x1b[2K")
+    sys.stdout.flush()
 
 
 def wait_for(client, wanted, pending, show_status=True):
@@ -96,8 +106,7 @@ def show_farm_splash(ns, round_no, farm):
     ns["eredmeny"](round_no)
     print(f"{round_no}. birtok: {farm}")
     ns["birtokrajz"](farm)
-    print("ENTER: kör indítása...")
-    input()
+    wait_enter("ENTER: kör indítása...")
     ns["kepernyo_torles"]()
 
 
@@ -158,7 +167,7 @@ def place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, 
             print("A BIRTOK akció miatt az aktuális útkártyát nem rakod le.")
             print(f"Következő birtok: {result['farm']}")
             ns["birtokrajz"](result["farm"])
-            input("ENTER: folytatás...")
+            wait_enter("ENTER: folytatás...")
             return True
 
         print("Érvénytelen parancs.")
