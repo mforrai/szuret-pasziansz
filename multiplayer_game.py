@@ -8,7 +8,6 @@ executing its intro() entry point.
 
 import argparse
 import copy
-import sys
 from collections import deque
 from pathlib import Path
 
@@ -35,15 +34,6 @@ def load_legacy_game():
     namespace["kihuzott_birtokok"] = [None, None, None, None, None, None]
     namespace["resultkor"] = [None, None, None, None, None, None]
     return namespace
-
-
-def wait_enter(message):
-    """Wait for ENTER and erase the prompt line before the next screen is drawn."""
-    print(message, end="", flush=True)
-    input()
-    # Move back to the prompt line and erase it, then return to a clean line.
-    sys.stdout.write("\x1b[1A\r\x1b[2K")
-    sys.stdout.flush()
 
 
 def wait_for(client, wanted, pending, show_status=True):
@@ -101,13 +91,15 @@ def wait_for_lobby(client, is_host, pending):
 
 
 def show_farm_splash(ns, round_no, farm):
-    """Show the newly active farm before the first road card of the round."""
+    """Show the newly active farm before the first road card of the round.
+
+    birtokrajz() already contains the ENTER prompt and clears the screen afterwards,
+    so no second multiplayer-side prompt is needed here.
+    """
     ns["kepernyo_torles"]()
     ns["eredmeny"](round_no)
     print(f"{round_no}. birtok: {farm}")
     ns["birtokrajz"](farm)
-    wait_enter("ENTER: kör indítása...")
-    ns["kepernyo_torles"]()
 
 
 def card_ascii(ns, card):
@@ -166,8 +158,8 @@ def place_or_peek(ns, client, pending, matrix, farm, card, round_no, peek_used, 
             print(f"{round_no}. birtok: {farm}")
             print("A BIRTOK akció miatt az aktuális útkártyát nem rakod le.")
             print(f"Következő birtok: {result['farm']}")
+            # birtokrajz() itself waits for ENTER and clears the screen.
             ns["birtokrajz"](result["farm"])
-            wait_enter("ENTER: folytatás...")
             return True
 
         print("Érvénytelen parancs.")
