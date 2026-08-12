@@ -22,7 +22,7 @@ import secrets
 # input()
 
 # paraméterek
-version = 'v1.3'
+version = 'v1.35'
 nyelv = 'hun'
 ydim = 72
 xdim = 63
