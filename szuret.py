@@ -1026,7 +1026,7 @@ def help():
     print(
         '''
 ────────────────────────────────────────────────────────────────────────
- Szüret-CLI: A játék célja                                              1/5
+ Szüret-CLI: A játék célja                                           1/5
 ────────────────────────────────────────────────────────────────────────
 
 A játék során dűlőutakat (útvonalakat) kell berajzolni a térképre,
@@ -1064,7 +1064,7 @@ A játék célja: minél több pont elérése.
     print(
         '''
 ────────────────────────────────────────────────────────────────────────
- Szüret-CLI: A játék menete                                             2/5
+ Szüret-CLI: A játék menete                                          2/5
 ────────────────────────────────────────────────────────────────────────
 
 A játék 5 körből áll.
@@ -1103,7 +1103,7 @@ A játékos két lehetőség közül választhat:
     print(
         '''
 ────────────────────────────────────────────────────────────────────────
- Szüret-CLI: Útvonalrajzolás és pontozás                                3/5
+ Szüret-CLI: Útvonalrajzolás és pontozás                             3/5
 ────────────────────────────────────────────────────────────────────────
 
 A játékosnak a térkép egy szabadon választott üres mezőjébe kell
@@ -1142,7 +1142,7 @@ ha a saját mezőjén is út halad keresztül.
     print(
         '''
 ────────────────────────────────────────────────────────────────────────
- Szüret-CLI: Térkép magyarázata                                         4/5
+ Szüret-CLI: Térkép magyarázata                                      4/5
 ────────────────────────────────────────────────────────────────────────
 
 
@@ -1179,7 +1179,7 @@ ha a saját mezőjén is út halad keresztül.
     print(
         '''
 ────────────────────────────────────────────────────────────────────────
- Szüret-CLI: A végeredmény kiszámítása                                  5/5
+ Szüret-CLI: A végeredmény kiszámítása                               5/5
 ────────────────────────────────────────────────────────────────────────
 
 Az ötödik birtok után járó pontok kiszámítása utána a játék véget ér.
