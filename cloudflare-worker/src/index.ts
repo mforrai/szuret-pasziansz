@@ -1,12 +1,14 @@
 import { DurableObject } from "cloudflare:workers";
 
 type Card = [number, number, number, number, 11 | 99];
+type ActionType = "place" | "peek";
 
 type PlayerState = {
   id: string;
   name: string;
   host: boolean;
   ready: boolean;
+  action?: ActionType;
   peekUsed: boolean;
   roundScore?: number;
   finalScore?: number;
@@ -122,6 +124,7 @@ export class GameRoom extends DurableObject<Env> {
       name,
       host,
       ready: false,
+      action: undefined,
       peekUsed: false,
     };
     await this.saveState(state);
@@ -186,26 +189,82 @@ export class GameRoom extends DurableObject<Env> {
         break;
       }
 
-      case "ready":
+      case "ready": {
         if (!state.started || state.finished || !state.currentCard) return;
+
+        const cardIndex = typeof data.cardIndex === "number"
+          ? Math.trunc(data.cardIndex)
+          : state.cardIndex;
+        if (cardIndex !== state.cardIndex) {
+          this.send(ws, { type: "error", message: "This road card is no longer active." });
+          return;
+        }
+
+        if (player.ready) {
+          this.sendReadyState(state);
+          return;
+        }
+
+        const action: ActionType = data.action === "peek" ? "peek" : "place";
+        if (action === "peek" && !player.peekUsed) {
+          this.send(ws, { type: "error", message: "BIRTOK action was not used for this road." });
+          return;
+        }
+
         player.ready = true;
+        player.action = action;
         await this.saveState(state);
-        this.broadcast({ type: "ready_state", ready: this.readyNames(state), total: Object.keys(state.players).length });
+        this.sendReadyState(state);
+
         if (this.allPlayersReady(state)) {
+          this.resetPlayersForCard(state);
           if (state.yellowCount >= 4) {
-            for (const p of Object.values(state.players)) p.ready = false;
             await this.saveState(state);
             this.broadcast({ type: "round_end", round: state.round, farm: state.currentFarm });
           } else {
-            for (const p of Object.values(state.players)) p.ready = false;
             await this.saveState(state);
             await this.revealNextCard(state);
           }
         }
         break;
+      }
+
+      case "undo": {
+        if (!state.started || state.finished || !state.currentCard) {
+          this.send(ws, { type: "undo_result", accepted: false, reason: "Nincs aktív útkártya." });
+          return;
+        }
+
+        const cardIndex = typeof data.cardIndex === "number" ? Math.trunc(data.cardIndex) : -1;
+        if (cardIndex !== state.cardIndex) {
+          this.send(ws, { type: "undo_result", accepted: false, reason: "Ez az útkártya már lezárult." });
+          return;
+        }
+        if (!player.ready) {
+          this.send(ws, { type: "undo_result", accepted: false, reason: "Nincs visszavonható lerakás." });
+          return;
+        }
+        if (player.action !== "place") {
+          this.send(ws, { type: "undo_result", accepted: false, reason: "A BIRTOK akció nem vonható vissza." });
+          return;
+        }
+
+        const otherPlayerReady = Object.values(state.players).some((p) => p.id !== player.id && p.ready);
+        if (otherPlayerReady) {
+          this.send(ws, { type: "undo_result", accepted: false, reason: "A másik játékos már befejezte ezt az útkártyát." });
+          return;
+        }
+
+        player.ready = false;
+        player.action = undefined;
+        await this.saveState(state);
+        this.send(ws, { type: "undo_result", accepted: true, cardIndex: state.cardIndex });
+        this.sendReadyState(state);
+        break;
+      }
 
       case "peek":
-        if (!state.started || state.finished || player.peekUsed) return;
+        if (!state.started || state.finished || !state.currentCard || player.peekUsed || player.ready) return;
         player.peekUsed = true;
         await this.saveState(state);
         this.send(ws, { type: "peek_result", farm: state.farms[state.round] });
@@ -273,6 +332,7 @@ export class GameRoom extends DurableObject<Env> {
       return;
     }
     state.currentCard = card;
+    this.resetPlayersForCard(state);
     if (card[4] === 99) state.yellowCount += 1;
     await this.saveState(state);
     this.broadcast({
@@ -284,9 +344,17 @@ export class GameRoom extends DurableObject<Env> {
     });
   }
 
+  private resetPlayersForCard(state: RoomState): void {
+    for (const p of Object.values(state.players)) {
+      p.ready = false;
+      p.action = undefined;
+    }
+  }
+
   private resetPlayersForRound(state: RoomState): void {
     for (const p of Object.values(state.players)) {
       p.ready = false;
+      p.action = undefined;
       p.peekUsed = false;
       p.roundScore = undefined;
     }
@@ -299,6 +367,20 @@ export class GameRoom extends DurableObject<Env> {
 
   private readyNames(state: RoomState): string[] {
     return Object.values(state.players).filter((p) => p.ready).map((p) => p.name);
+  }
+
+  private readyIds(state: RoomState): string[] {
+    return Object.values(state.players).filter((p) => p.ready).map((p) => p.id);
+  }
+
+  private sendReadyState(state: RoomState): void {
+    this.broadcast({
+      type: "ready_state",
+      cardIndex: state.cardIndex,
+      ready: this.readyNames(state),
+      readyIds: this.readyIds(state),
+      total: Object.keys(state.players).length,
+    });
   }
 
   private publicPlayers(state: RoomState) {
