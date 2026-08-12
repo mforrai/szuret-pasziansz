@@ -103,12 +103,17 @@ export class GameRoom extends DurableObject<Env> {
     const url = new URL(request.url);
     const name = (url.searchParams.get("name") || "Játékos").slice(0, 32);
     const wantsHost = url.searchParams.get("host") === "1";
+    const state = await this.loadState();
+
+    // Reconnect will be added with a session token later. For now a game has a
+    // fixed player set from START until FINISH so the READY barrier is stable.
+    if (state.started) {
+      return new Response("Game already started", { status: 409 });
+    }
 
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     const playerId = crypto.randomUUID();
-
-    let state = await this.loadState();
     const hasHost = Object.values(state.players).some((p) => p.host);
     const host = wantsHost && !hasHost;
 
@@ -148,7 +153,7 @@ export class GameRoom extends DurableObject<Env> {
       return;
     }
 
-    let state = await this.loadState();
+    const state = await this.loadState();
     const player = state.players[playerId];
     if (!player) return;
 
@@ -188,15 +193,9 @@ export class GameRoom extends DurableObject<Env> {
 
       case "peek":
         if (!state.started || state.finished || player.peekUsed) return;
-        if (state.round < 5) {
-          player.peekUsed = true;
-          await this.saveState(state);
-          this.send(ws, { type: "peek_result", farm: state.farms[state.round] });
-        } else {
-          player.peekUsed = true;
-          await this.saveState(state);
-          this.send(ws, { type: "peek_result", farm: state.farms[5] });
-        }
+        player.peekUsed = true;
+        await this.saveState(state);
+        this.send(ws, { type: "peek_result", farm: state.farms[state.round] });
         break;
 
       case "round_score":
