@@ -27,7 +27,7 @@ def run_script(filename):
 def show_menu():
     clear_screen()
     print("────────────────────────────────────────────────────────────────────────")
-    print("                              SZÜRET")
+    print("                              Szüret-CLI")
     print("────────────────────────────────────────────────────────────────────────")
     print()
     print("  1. Single player")
