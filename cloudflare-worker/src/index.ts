@@ -158,8 +158,13 @@ export class GameRoom extends DurableObject<Env> {
     if (!player) return;
 
     switch (data.type) {
-      case "start_game":
+      case "start_game": {
         if (!player.host || state.started) return;
+        const playerCount = Object.keys(state.players).length;
+        if (playerCount < 2) {
+          this.send(ws, { type: "error", message: "At least two players are required to start." });
+          return;
+        }
         state.started = true;
         state.round = 1;
         state.yellowCount = 0;
@@ -172,6 +177,7 @@ export class GameRoom extends DurableObject<Env> {
         this.broadcast({ type: "game_started", round: 1, farm: state.currentFarm, players: this.publicPlayers(state) });
         await this.revealNextCard(state);
         break;
+      }
 
       case "ready":
         if (!state.started || state.finished || !state.currentCard) return;
