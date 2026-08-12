@@ -7,4 +7,5 @@ szuret_backup.py
 setup.py
 build/
 dist/
-
+venv-szuret-pasziansz/
+__pycache__/
