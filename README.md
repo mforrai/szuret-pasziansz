@@ -1,9 +1,10 @@
-# Szüret-ASCII
+# Szüret-CLI
 
 A **Szüret** (Kiadó: Granna) című társasjáték ASCII-alapú Python-verziója.
 
 ## Verziók
 
+- **v2.1** – Windows terminal fix
 - **v2.0** – Multiplayer
 - **v1.35** – Bugfix (ChatGPT code review)
 - **v1.3** – Egyjátékos mód
@@ -15,8 +16,8 @@ A játék Python 3-mal fut. Javasolt külön virtuális környezetet használni.
 ### 1. Repository klónozása
 
 ```bash
-git clone https://github.com/mforrai/szuret-pasziansz.git
-cd szuret-pasziansz
+git clone https://github.com/mforrai/szuret-cli.git
+cd szuret-cli
 ```
 
 ### 2. Virtuális környezet létrehozása
@@ -24,22 +25,22 @@ cd szuret-pasziansz
 Linux / macOS:
 
 ```bash
-python3 -m venv venv-szuret-pasziansz
-source venv-szuret-pasziansz/bin/activate
+python3 -m venv venv-szuret-cli
+source venv-szuret-cli/bin/activate
 ```
 
 Windows PowerShell:
 
 ```powershell
-py -m venv venv-szuret-pasziansz
-.\venv-szuret-pasziansz\Scripts\Activate.ps1
+py -m venv venv-szuret-cli
+.\venv-szuret-cli\Scripts\Activate.ps1
 ```
 
 Windows Command Prompt:
 
 ```cmd
-py -m venv venv-szuret-pasziansz
-venv-szuret-pasziansz\Scripts\activate.bat
+py -m venv venv-szuret-cli
+venv-szuret-cli\Scripts\activate.bat
 ```
 
 ### 3. Python-függőségek telepítése

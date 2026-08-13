@@ -4,6 +4,7 @@
 import argparse
 import copy
 import json
+import os
 import secrets
 import select
 import string
@@ -60,6 +61,28 @@ def choose_player_name():
     return name
 
 
+def read_key():
+    """Read one key without requiring Enter on Windows, Linux and macOS."""
+    if os.name == "nt":
+        import msvcrt
+        key = msvcrt.getwch()
+    else:
+        import termios
+        import tty
+
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            key = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+    if key == "\x03":
+        raise KeyboardInterrupt
+    return key
+
+
 def generate_room_code():
     return "".join(secrets.choice(ROOM_ALPHABET) for _ in range(8))
 
@@ -68,20 +91,21 @@ def choose_room():
     print("\nMULTIPLAYER")
     print("1. Új játék indítása")
     print("2. Csatlakozás meglévő játékhoz")
+    print("Választás [1/2]: ", end="", flush=True)
     while True:
-        choice = input("Választás [1/2]: ").strip()
+        choice = read_key()
         if choice == "1":
             room = generate_room_code()
-            print(f"\nJÁTÉKSZÁM: {room}")
+            print(f"\n\nJÁTÉKSZÁM: {room}")
             print("Ezt a 8 karakteres kódot add meg a másik játékosnak.\n")
             return room, True
         if choice == "2":
+            print()
             room = input("Játékszám: ").strip().upper()
             if len(room) == 8 and room.isalnum():
                 return room, False
             print("A játékszám 8 alfanumerikus karakter legyen.")
-        else:
-            print("1 vagy 2 választható.")
+            print("Választás [1/2]: ", end="", flush=True)
 
 
 def wait_for(client, wanted, pending, show_status=True):
@@ -177,7 +201,7 @@ def place_or_peek(ns, client, pending, matrix, room, name, farm, card, round_no,
                   peek_used, yellow_count, next_farm):
     render_turn_screen(ns, matrix, room, name, farm, card, round_no, yellow_count, next_farm)
     while True:
-        answer = input("Hová helyezed az utat? (pl. C3, vagy BIRTOK): ").strip()
+        answer = input(ns["txt"]["where_road"][ns["nyelv"]]).strip()
         if ns["check"](answer) == 1:
             coord = answer[:1].upper() + answer[-1:]
             y = ns["oszlopok"].index(coord[0])

@@ -21,7 +21,7 @@ import secrets
 # input()
 
 # paraméterek
-version = 'v2.0'
+version = 'v2.1'
 nyelv = 'hun'
 ydim = 72
 xdim = 63
@@ -44,11 +44,13 @@ except:
 def oprendszer():
     if os.name == 'nt':
         return 'win'
-    if os.name == 'posix':
+
+    if platform.system() == 'Darwin':
         if platform.platform() in ['Darwin-18.2.0-iPhone10,6-64bit', 'Darwin-18.2.0-iPad7,3-64bit']:
             return 'ios'
-        else:
-            return 'mac'
+        return 'mac'
+
+    return 'linux'
 
 ###################################################
 ###### KÉPERNYŐ TÖRLÉS - iOS, Linux/OSX, Windows###
@@ -56,13 +58,13 @@ def oprendszer():
 
 
 def kepernyo_torles():
-    if oprendszer() == 'win':
-        os.system('cls')
     if oprendszer() == 'ios':
         import console
         console.clear()
-    if oprendszer() == 'mac':
-        os.system('clear')
+        return
+
+    sys.stdout.write('\033[2J\033[3J\033[H')
+    sys.stdout.flush()
 
 #####################################
 #### KÉPERNYŐ ELEMEK ################
@@ -118,7 +120,7 @@ def teljessorszoveggel(stilus, szoveg, pozicio='kozep', extra_space=''):
 ############################################
 teljessor('ures')
 
-if oprendszer() == 'mac':
+if oprendszer() in ['mac', 'linux']:
     kepernyo_torles()
     sys.stdout.write("\x1b[8;{rows};{cols}t".format(rows=xdim, cols=ydim))
 if oprendszer() == 'ios':
@@ -233,8 +235,8 @@ txt = {
     },
 
     'under_contstruction': {
-        'hun': 'Feltöltés alatt...',
-        'eng': 'Under construction...'
+        'hun': 'A Szüret (Kiadó: Granna) című társasjáték ASCII-alapú Python-verziója.',
+        'eng': 'An ASCII-based Python clone of the board game Avenue (specifically based on its Hungarian edition, \'Szüret\').'
     },
 
     'points_expected': {
@@ -248,8 +250,8 @@ txt = {
     },
 
     'where_road': {
-        'hun': 'Hová helyezi az utat?',
-        'eng': 'Where do you place the road?'
+        'hun': 'Hová helyezi az utat? (pl. C3, vagy BIRTOK): ',
+        'eng': 'Where do you place the road? (e.g. C3, or FARM): '
     },
 
     'field_used': {
@@ -311,29 +313,25 @@ txt = {
 
 
 def getchar():
-    if oprendszer() == 'mac':
-        # visszaadja a leütött karaktert
-        import os
-        ch = ''
-        if os.name == 'nt':  # Windows
-            import msvcrt
-            ch = msvcrt.getch()
-        else:
-            import tty
-            import termios
-            import sys
-            fd = sys.stdin.fileno()
-            old_settings = termios.tcgetattr(fd)
-            try:
-                tty.setraw(sys.stdin.fileno())
-                ch = sys.stdin.read(1)
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        if ord(ch) == 3:
-            quit()  # ctrl+C
-        return ch
+    if oprendszer() == 'win':
+        import msvcrt
+        ch = msvcrt.getwch()
+    elif oprendszer() in ['mac', 'linux']:
+        import tty
+        import termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     else:
-        pass
+        return ''
+
+    if ch == '\x03':
+        raise KeyboardInterrupt
+    return ch
 # while 1:  # ha ki kellene próbálni, hogy mik az egyes key code-ok
 # 	ch = getchar()
 # 	print('Lenyomott gomb %c (%i)' % (ch, ord(ch)))
@@ -382,7 +380,7 @@ def convert_str2int(a):
 ######################################
 #### NYELV + ZENE + SZÍNEK ###################
 ######################################
-if oprendszer() == 'mac':
+if oprendszer() in ['mac', 'linux', 'win']:
     if query_settings() == 1:
         if beallitasok['nyelv'] == '1':
             nyelv = 'hun'
@@ -407,9 +405,11 @@ if oprendszer() == 'mac':
             ch_nyelv = ord(getchar())
             if ch_nyelv in [49]:  # magyar
                 nyelv = 'hun'
+                kepernyo_torles()
                 break
             if ch_nyelv in [50]:  # angol
                 nyelv = 'eng'
+                kepernyo_torles()
                 break
             else:
                 kepernyo_torles()
@@ -422,9 +422,11 @@ if oprendszer() == 'mac':
             ch_zene = ord(getchar())
             if ch_zene in [105, 73, 89, 121]:  # kér zenét
                 zene = 'i'
+                kepernyo_torles()
                 break
             if ch_zene in [110, 78]:  # nem kér zenét
                 zene = 'n'
+                kepernyo_torles()
                 break
             else:
                 kepernyo_torles()
@@ -438,9 +440,11 @@ if oprendszer() == 'mac':
             ch_szin = ord(getchar())
             if ch_szin in [105, 73, 89, 121]:  # kér színeket
                 szinek = 'i'
+                kepernyo_torles()
                 break
             if ch_szin in [110, 78]:  # nem kér színeket
                 szinek = 'n'
+                kepernyo_torles()
                 break
             else:
                 kepernyo_torles()
@@ -552,7 +556,7 @@ def szomszedos(matrix, sor, oszlop):
 
 
 def rajz(imp_matrix, n1, n2):
-    if ((oprendszer() in ['ios', 'win'] or szinek == 'n')):
+    if oprendszer() == 'ios' or szinek == 'n':
         mtrx = copy.deepcopy(imp_matrix)
         for x in range(sor):
             for y in range(oszlop):
@@ -749,7 +753,7 @@ def laprajz(matrix, sor):
 
 
 def laprajz_sarga(matrix, sor):
-    if oprendszer() == 'mac' and szinek in ['I', 'i']:
+    if oprendszer() in ['mac', 'linux', 'win'] and szinek in ['I', 'i']:
         for i in range(sor):
             print('\033[0;33m', matrix[i], '\033[1;m')
     else:
@@ -989,24 +993,24 @@ def cim():
     teljessor('ures', 3)
     print(
         '''
-			 _____     _   _          _
-			/  ___|   (_) (_)        | |
-			\ `--. _____   _ _ __ ___| |_
-			 `--. \_  / | | | '__/ _ \ __|
-			/\__/ // /| |_| | | |  __/ |_
-			\____//___|\__,_|_|  \___|\__|
-	                 --- p a s z i á n s z ---
-				         __
-				     __ {_/
-				     \_}\\ _
-				        _\(_)_
-				       (_)_)(_)_
-				      (_)(_)_)(_)
-				       (_)(_))_)
-				        (_(_(_)
-				         (_)_)
-				          (_)
-	'''
+         _____     _   _          _        ____ _     ___
+        /  ___|   (_) (_)        | |      / ___| |   |_ _|
+        \\ `--. _____   _ _ __ ___| |_    | |   | |    | |
+         `--. \\_  / | | | '__/ _ \\ __|   | |   | |    | |
+        /\\__/ // /| |_| | | |  __/ |_    | |___| |___ | |
+        \\____//___|\\__,_|_|  \\___|\\__|    \\____|_____|___|
+
+                             __
+                         __ {_/
+                         \\_}\\\\ _
+                            _\\(_)_
+                           (_)_)(_)_
+                          (_)(_)_)(_)
+                           (_)(_))_)
+                            (_(_(_)
+                             (_)_)
+                              (_)
+'''
     )
 
 
@@ -1217,7 +1221,7 @@ def magamrol():
     kepernyo_torles()
     print(txt['under_contstruction'][nyelv])
     print('')
-    print('https://github.com/mforrai/szuret-pasziansz')
+    print('https://github.com/mforrai/szuret-cli')
     input('')
     intro()
 
@@ -1591,7 +1595,7 @@ sor = 7
 
 
 def intro():
-    if oprendszer() == 'mac':
+    if oprendszer() in ['mac', 'linux', 'win']:
         kepernyo_torles()
         teljessor('ures', 9)
         cim()
@@ -1735,6 +1739,12 @@ def jatek():
                               txt['birtok'][nyelv] + ': ' + birtok)
                         birtokrajz(kovetkezo_birtok)
                         kukk[kor] = 1
+
+                        # A birtokrajz Enter után törli a képernyőt, ezért
+                        # a következő útkártya előtt vissza kell rajzolni a játékállást.
+                        eredmeny(kor)
+                        print(str(kor) + '. ' + txt['birtok'][nyelv] + ': ' + birtok)
+                        rajz(Matrix, oszlop, sor)
 
                         # A BIRTOK akció kiváltja az aktuális út lerakását.
                         # A következő lapot a külső játékhurok húzza.

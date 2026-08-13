@@ -24,6 +24,28 @@ def run_script(filename):
         print()
 
 
+def read_key():
+    """Read and return one key without requiring Enter."""
+    if os.name == "nt":
+        import msvcrt
+        key = msvcrt.getwch()
+    else:
+        import termios
+        import tty
+
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            key = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+    if key == "\x03":
+        raise KeyboardInterrupt
+    return key
+
+
 def show_menu():
     clear_screen()
     print("────────────────────────────────────────────────────────────────────────")
@@ -35,22 +57,27 @@ def show_menu():
     print()
     print("  0. Kilépés")
     print()
+    print("Választás [1/2/0]: ", end="", flush=True)
 
 
 def main():
     while True:
         show_menu()
-        choice = input("Választás [1/2/0]: ").strip().lower()
+        try:
+            choice = read_key().lower()
+        except KeyboardInterrupt:
+            clear_screen()
+            return
 
-        if choice in {"1", "s", "single", "singleplayer", "single player"}:
+        if choice in {"1", "s"}:
             run_script("szuret.py")
             continue
 
-        if choice in {"2", "m", "multi", "multiplayer"}:
+        if choice in {"2", "m"}:
             run_script("multiplayer_game.py")
             continue
 
-        if choice in {"0", "q", "quit", "exit", "kilepes", "kilépés"}:
+        if choice in {"0", "q"}:
             clear_screen()
             return
 
